@@ -262,6 +262,10 @@ const LayoutBase = () => {
             <Typography variant="body2" color="text.secondary" align="center" mt={1}>
               Ver Indicadores
             </Typography>
+
+
+
+
           </Paper>
         </motion.div>
       </Grid>
@@ -272,9 +276,35 @@ const LayoutBase = () => {
     {/* Lado direito - Sidebar com resumos */}
     <Sidebar />
   </Box>
+
+          
+
 ) : (
   <Outlet />
+
+ 
 )}
+
+<Typography
+        variant="h5"
+        gutterBottom
+        sx={{ textAlign: 'center', fontWeight: 'bold', color: '#1976d2',marginBottom:'60px' }}
+      >
+        DASHBOARD
+      </Typography>
+        <Box
+          component="iframe"
+          src="http://10.6.60.38:3000/public/dashboard/c9f60a20-f2ee-4d2d-b7b1-17b4cf5c3e1e"
+          sx={{
+            flexGrow: 1,
+            border: "none",
+            width: "100%",
+            height: "calc(100vh - 100px)", // ajuste conforme o espaço do seu layout
+            boxShadow: 3,
+            borderRadius: 2,
+          }}
+          title="Dashboard Metabase"
+          />
         </Box>
       </Box>
     </Box>
