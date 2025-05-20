@@ -262,10 +262,6 @@ const LayoutBase = () => {
             <Typography variant="body2" color="text.secondary" align="center" mt={1}>
               Ver Indicadores
             </Typography>
-
-
-
-
           </Paper>
         </motion.div>
       </Grid>
@@ -275,17 +271,8 @@ const LayoutBase = () => {
 
     {/* Lado direito - Sidebar com resumos */}
     <Sidebar />
-  </Box>
-
-          
-
-) : (
-  <Outlet />
-
- 
-)}
-
-<Typography
+{/* 
+    <Typography
         variant="h5"
         gutterBottom
         sx={{ textAlign: 'center', fontWeight: 'bold', color: '#1976d2',marginBottom:'60px' }}
@@ -304,7 +291,19 @@ const LayoutBase = () => {
             borderRadius: 2,
           }}
           title="Dashboard Metabase"
-          />
+          /> */}
+          
+  </Box>
+
+          
+
+) : (
+  <Outlet />
+
+ 
+)}
+
+
         </Box>
       </Box>
     </Box>

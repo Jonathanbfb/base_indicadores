@@ -1,4 +1,4 @@
-import footerLogo from "../../../assets/footer_logo.svg";
+/* import footerLogo from "../../../assets/footer_logo.svg";
 
 const Footer: React.FC = () => (
   <footer style={{ textAlign: "center", marginTop: "20px" }}>
@@ -10,5 +10,5 @@ const Footer: React.FC = () => (
   </footer>
 );
 
-export default Footer;
+export default Footer; */
 
