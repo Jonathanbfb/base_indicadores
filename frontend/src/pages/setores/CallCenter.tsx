@@ -85,54 +85,54 @@ const CallCenter: React.FC = () => {
     
     {
       "indicadores": "Qtd. profissionais ativos no mês",
-      "jan": 11, "fev": 10, "mar": "10", "abr": "10", "mai": "-", "jun": "-", "jul": "-", "ago": "-", "set": "-", "out": "-", "nov": "-",
-      "acumulado": { "fieam": 10, "sesi": "-", "senai": "-", "iel": "-","total geral":"10" }
+      "jan": 11, "fev": 10, "mar": "10", "abr": "10", "mai": "10", "jun": "-", "jul": "-", "ago": "-", "set": "-", "out": "-", "nov": "-",
+      "acumulado": { "fieam": "-", "sesi": "-", "senai": "-", "iel": "-","total geral":"10" }
     },
     {
       "indicadores": "Qtd. de horas trabalhadas no setor",
-      "jan": "1.936", "fev": "1.156", "mar": "1.428", "abr": "1.178", "mai": "-", "jun": "-", "jul": "-", "ago": "-", "set": "-", "out": "-", "nov": "-",
-      "acumulado": { "fieam": "5.698", "sesi": "-", "senai": "-", "iel": "-","total geral":"5.698" }
+      "jan": "1.936", "fev": "1.156", "mar": "1.428", "abr": "1.178", "mai": "680", "jun": "-", "jul": "-", "ago": "-", "set": "-", "out": "-", "nov": "-",
+      "acumulado": { "fieam": "-", "sesi": "-", "senai": "-", "iel": "-","total geral":"6.378" }
     },
     {
       "indicadores": "Total de ações executadas no mês",
-      "jan": "30.045", "fev": "25.945", "mar": "26.177", "abr": "19.851", "mai": "-", "jun": "-", "jul": "-", "ago": "-", "set": "-", "out": "-", "nov": "-",
-      "acumulado": { "fieam": "102.018", "sesi": "-", "senai": "-", "iel": "-","total geral":"102.018" }
+      "jan": "30.045", "fev": "25.945", "mar": "26.177", "abr": "21.653", "mai": "9.824", "jun": "-", "jul": "-", "ago": "-", "set": "-", "out": "-", "nov": "-",
+      "acumulado": { "fieam": "-", "sesi": "-", "senai": "-", "iel": "-","total geral":"113.644" }
     },
    
     {
       "indicadores": "Tempo médio por ação executada",
-      "jan": "4 min", "fev": "3 min", "mar": "3 min", "abr": "3 min", "mai": "-", "jun": "-", "jul": "-", "ago": "-", "set": "-", "out": "-", "nov": "-",
-      "acumulado": { "fieam": "3 min", "sesi": "-", "senai": "-", "iel": "-","total geral":"3 min" }
+      "jan": "4 min", "fev": "3 min", "mar": "3 min", "abr": "3 min", "mai": "3 min", "jun": "-", "jul": "-", "ago": "-", "set": "-", "out": "-", "nov": "-",
+      "acumulado": { "fieam": "-", "sesi": "-", "senai": "-", "iel": "-","total geral":"3 min" }
     }, 
       {
         "indicadores": "Atendimentos receptivos Telefone",
-        "jan": "2.548", "fev": "2.959", "mar": "1.356", "abr": "1.226", "mai": "-", "jun": "-", "jul": "-", "ago": "-", "set": "-", "out": "-", "nov": "-", "dez": "-",
-        "acumulado": { "fieam": "149", "sesi": "6.571", "senai": "1.244", "iel": "125","total geral":"8.089" }
+        "jan": "2.548", "fev": "2.959", "mar": "1.356", "abr": "1.226", "mai": "850", "jun": "-", "jul": "-", "ago": "-", "set": "-", "out": "-", "nov": "-", "dez": "-",
+        "acumulado": { "fieam": "360", "sesi": "7.105", "senai": "1.337", "iel": "137","total geral":"8.939" }
       },
       {
         "indicadores": "Atendimentos receptivos WhatsApp",
-        "jan": "22.241", "fev": "17.985", "mar": "18.203", "abr": "15.013", "mai": "-", "jun": "-", "jul": "-", "ago": "-", "set": "-", "out": "-", "nov": "-", "dez": "-",
-        "acumulado": { "fieam": "73.442", "sesi": "-", "senai": "-", "iel": "-","total geral":"73.442" }
+        "jan": "22.241", "fev": "17.985", "mar": "18.203", "abr": "15.013", "mai": "7.130", "jun": "-", "jul": "-", "ago": "-", "set": "-", "out": "-", "nov": "-", "dez": "-",
+        "acumulado": { "fieam": "-", "sesi": "-", "senai": "-", "iel": "-","total geral":"80.572" }
       },
       {
         "indicadores": "Atendimentos receptivos Instagram",
-        "jan": 341, "fev": "2", "mar": "673", "abr": "580", "mai": "-", "jun": "-", "jul": "-", "ago": "-", "set": "-", "out": "-", "nov": "-", "dez": "-",
-        "acumulado": { "fieam": "1.596", "sesi": "-", "senai": "-", "iel": "-","total geral":"1.596" }
+        "jan": 341, "fev": "2", "mar": "673", "abr": "580", "mai": "337", "jun": "-", "jul": "-", "ago": "-", "set": "-", "out": "-", "nov": "-", "dez": "-",
+        "acumulado": { "fieam": "-", "sesi": "-", "senai": "-", "iel": "-","total geral":"1.933" }
       },
       {
         "indicadores": "Atendimentos receptivos Facebook",
-        "jan": 47, "fev": "2", "mar": "54", "abr": "64", "mai": "-", "jun": "-", "jul": "-", "ago": "-", "set": "-", "out": "-", "nov": "-", "dez": "-",
-        "acumulado": { "fieam": 167, "sesi": "-", "senai": "-", "iel": "-","total geral":"167" }
+        "jan": 47, "fev": "2", "mar": "54", "abr": "64", "mai": "27", "jun": "-", "jul": "-", "ago": "-", "set": "-", "out": "-", "nov": "-", "dez": "-",
+        "acumulado": { "fieam": "-", "sesi": "-", "senai": "-", "iel": "-","total geral":"194" }
       },
       {
         "indicadores": "Atendimentos receptivos E-mail",
-        "jan": 96, "fev": "2.907", "mar": "1.848", "abr": "2.093", "mai": "-", "jun": "-", "jul": "-", "ago": "-", "set": "-", "out": "-", "nov": "-", "dez": "-",
-        "acumulado": { "fieam": "6.944", "sesi": "-", "senai": "-", "iel": "-","total geral":"6.944" }
+        "jan": 96, "fev": "2.907", "mar": "1.848", "abr": "2.093", "mai": "1.170", "jun": "-", "jul": "-", "ago": "-", "set": "-", "out": "-", "nov": "-", "dez": "-",
+        "acumulado": { "fieam": "-", "sesi": "-", "senai": "-", "iel": "-","total geral":"8.114" }
       },
       {
         "indicadores": "Atendimentos ativos Telefone",
-        "jan": 1.144, "fev": 823, "mar": "744", "abr": "875", "mai": "-", "jun": "-", "jul": "-", "ago": "-", "set": "-", "out": "-", "nov": "-", "dez": "-",
-        "acumulado": { "fieam": "3.586", "sesi": "-", "senai": "-", "iel": "-","total geral":"3.586" }
+        "jan": 1.144, "fev": 823, "mar": "744", "abr": "875", "mai": "310", "jun": "-", "jul": "-", "ago": "-", "set": "-", "out": "-", "nov": "-", "dez": "-",
+        "acumulado": { "fieam": "-", "sesi": "-", "senai": "-", "iel": "-","total geral":"3.896" }
       },
       {
         "indicadores": "Propostas geradas - Qtd",
@@ -347,7 +347,7 @@ const CallCenter: React.FC = () => {
           </Table> 
         </TableContainer>
       </Paper>
-      <h4>Atualizado até 01/05/2025 às 9h</h4>
+      <h4>Atualizado até 20/05/2025 às 8h</h4>
     </div>
   );
 };
