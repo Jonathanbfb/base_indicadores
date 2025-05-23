@@ -63,7 +63,6 @@ const CadastroItem = () => {
         const res = await api.get('/itens', {
           headers: { Authorization: `Bearer ${token}` }
         });
-        console.log('Itens recebidos da API:', res.data);
         setItens(res.data);
       } catch (err) {
         console.error('Erro ao carregar itens', err);
@@ -97,7 +96,6 @@ const CadastroItem = () => {
   const handleSubmit = async () => {
     try {
       const payload = { ...form, instituicoes };
-      console.log('Payload a ser enviado:', payload);
 
       if (editandoId) {
         await api.put(`/itens/${editandoId}`, payload, {

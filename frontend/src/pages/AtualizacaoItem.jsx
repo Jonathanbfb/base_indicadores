@@ -9,14 +9,20 @@ import {
   Paper,
   RadioGroup,
   FormControlLabel,
-  Radio
+  Radio,
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody
 } from '@mui/material';
 import api from '../services/api';
-import HistoricoAlteracoes from './setores/components/HistoricoAlteracoes'
 
 const AtualizacaoItem = () => {
   const [setores, setSetores] = useState([]);          // [{ id: 1, nome: 'Comercial' }, …]
-  const [allItens, setAllItens] = useState([]);        // todos os itens, sem filtrar
+  const [allItens, setAllItens] = useState([]);
+  const [historico, setHistorico] = useState([]);        // todos os itens, sem filtrar
   const [itensFiltrados, setItensFiltrados] = useState([]); // itens que pertencem ao setor selecionado
 
   const [form, setForm] = useState({
@@ -52,7 +58,6 @@ const AtualizacaoItem = () => {
 
   const limparFormulario = () => {
     setForm({
-      setorId: '',
       itemId: '',
       mes: '',
       ano: new Date().getFullYear(),
@@ -66,21 +71,34 @@ const AtualizacaoItem = () => {
     setItensFiltrados([]);
   };
 
+  const fetchHistorico = async () => {
+    try {
+      const res = await api.get('/historico', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setHistorico(res.data.historicos);
+    } catch (err) {
+      console.error('Erro ao buscar histórico', err);
+    }
+  };
+
+  const fetchData = async () => {
+    try {
+      const [resSetores, resItens] = await Promise.all([
+        api.get('/setores', { headers: { Authorization: `Bearer ${token}` } }),
+        api.get('/itens', { headers: { Authorization: `Bearer ${token}` } })
+      ]);
+      setSetores(resSetores.data);
+      setAllItens(resItens.data);
+    } catch (err) {
+      console.error('Erro ao buscar setores e itens', err);
+    }
+  };
+
   // 1) Buscar lista de setores e todos os itens ao montar
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [resSetores, resItens] = await Promise.all([
-          api.get('/setores', { headers: { Authorization: `Bearer ${token}` } }),
-          api.get('/itens', { headers: { Authorization: `Bearer ${token}` } })
-        ]);
-        setSetores(resSetores.data);
-        setAllItens(resItens.data);
-      } catch (err) {
-        console.error('Erro ao buscar setores e itens', err);
-      }
-    };
     fetchData();
+    fetchHistorico();
   }, [token]);
 
   // 2) Quando setorId mudar, filtrar os itens localmente
@@ -94,8 +112,6 @@ const AtualizacaoItem = () => {
     setItensFiltrados(filtrados);
     setForm(prev => ({ ...prev, itemId: '' }));
   }, [form.setorId, allItens]);
-
-
 
   // 3) Recalcula totalGeral sempre que algum valor numérico mudar
   useEffect(() => {
@@ -129,12 +145,13 @@ const AtualizacaoItem = () => {
         totalGeral: form.totalGeral,
         estrategia: form.estrategia
       };
-      console.log('Payload enviado:', payload);
       await api.put(`/atualizar-item/${payload.itemId}`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      limparFormulario();
+
       alert('Item atualizado com sucesso');
+      limparFormulario();
+      fetchHistorico();
     } catch (error) {
       console.error('Erro ao atualizar item:', error);
     }
@@ -316,12 +333,62 @@ const AtualizacaoItem = () => {
           </Button>
         </Box>
       </Paper>
-      <Paper sx={{ p: 4, marginTop: '25px' }}>
-      <HistoricoAlteracoes />
-      </Paper>
+
+      <Box p={3}>
+        <Paper sx={{ p: 4 }}>
+          <Typography variant="h5" mb={2}>
+            Histórico de Alterações
+          </Typography>
+
+          <TableContainer
+            sx={{
+              maxHeight: 400,
+              overflow: 'auto'
+            }}
+          >
+            <Table stickyHeader>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Usuário</TableCell>
+                  <TableCell>Item</TableCell>
+                  <TableCell>Setor</TableCell>
+                  <TableCell>Ano</TableCell>
+                  <TableCell>Mês</TableCell>
+                  <TableCell>FIEAM</TableCell>
+                  <TableCell>SESI</TableCell>
+                  <TableCell>SENAI</TableCell>
+                  <TableCell>IEL</TableCell>
+                  <TableCell>Total</TableCell>
+                  <TableCell>Data da Alteração</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {historico.map((h) => (
+                  <TableRow key={h.id}>
+                    <TableCell>{h.usuario.nome}</TableCell>
+                    <TableCell>{h.item.nome}</TableCell>
+                    <TableCell>{h.setor.nome}</TableCell>
+                    <TableCell>{h.ano}</TableCell>
+                    <TableCell>{h.mes}</TableCell>
+                    <TableCell>{h.valorFieam}</TableCell>
+                    <TableCell>{h.valorSesi}</TableCell>
+                    <TableCell>{h.valorSenai}</TableCell>
+                    <TableCell>{h.valorIel}</TableCell>
+                    <TableCell>{h.totalGeral}</TableCell>
+                    <TableCell>
+                      {new Date(h.dataAlteracao).toLocaleString()}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+      </Box>
+
     </Box>
 
-    
+
   );
 };
 

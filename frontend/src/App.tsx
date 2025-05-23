@@ -5,16 +5,8 @@ import Menu from './pages/Menu';
 import Usuarios from './pages/Usuarios';
 import CadastroItem from './pages/CadastroItem';
 import AtualizacaoItem from './pages/AtualizacaoItem';
-import HistoricoAlteracoes from './pages/setores/components/HistoricoAlteracoes';
 import LayoutComBarra from './pages/LayoutComBarra';
-import Marketing from './pages/setores/Marketing';
 import Comercial from './pages/setores/Comercial';
-import Design from './pages/setores/Design';
-import CallCenter from './pages/setores/CallCenter';
-import Administracao from './pages/setores/Administracao';
-import RedesSociais from './pages/setores/RedesSociais';
-import Mercado from './pages/setores/Mercado';
-import Promocoes from './pages/setores/Promocoes';
 import Geral from './pages/setores/Geral';
 import JornadaColaboradores from './pages/JornadaColaboradores';
 import SetorPage from './pages/setores/SetorPage';
@@ -44,7 +36,6 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
         <Route path="/setor/Comercial" element={<Comercial />} />
-        <Route path="/setor/Design" element={<Design />} />
         <Route path="/setor/Geral" element={<Geral />} />
         <Route path="/setor/:slug" element={<SetorPage />} />
 
@@ -76,12 +67,6 @@ function App() {
             </ProtectedRoute>
           } />
 
-          <Route path="/historico" element={
-            <ProtectedRoute perfisPermitidos={['Administrador', 'Usuario_Editor', 'Lideres']}>
-              <HistoricoAlteracoes />
-            </ProtectedRoute>
-          } />
-
           <Route path="/dias-uteis" element={
             <ProtectedRoute perfisPermitidos={['Administrador', 'Usuario_Editor', 'Lideres']}>
               <JornadaColaboradores></JornadaColaboradores>
@@ -91,7 +76,7 @@ function App() {
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/menu" />} />
-  
+
       </Routes>
     </Router>
   );

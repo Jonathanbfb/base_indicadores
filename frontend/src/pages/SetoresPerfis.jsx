@@ -52,8 +52,6 @@ const SetoresPerfis = () => {
       ? { nome: form.nome, detalhes: form.descricao, tipo: form.tipo }
       : { nome: form.nome, descricao: form.descricao, slug: (form.nome) };
 
-
-
     try {
       if (editingId) {
         await api.put(`${endpoint}/${editingId}`, payload, {
@@ -67,9 +65,7 @@ const SetoresPerfis = () => {
       }
 
       setOpenDialog(false);
-      setForm({ nome: '', descricao: '' });
-      setEditingId(null);
-      fetchData();
+      window.location.reload();
     } catch (err) {
       console.error('Erro ao salvar:', err);
       alert('Erro ao salvar. Verifique se está autenticado.');

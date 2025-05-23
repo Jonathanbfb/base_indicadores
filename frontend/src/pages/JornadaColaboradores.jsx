@@ -29,14 +29,14 @@ const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const JornadaColaboradores = () => {
   const [ano, setAno] = useState(dayjs().year());
   const [mes, setMes] = useState(dayjs().month() + 1);
-  const [dados, setDados] = useState([]); // [{ setor, colaboradores: [ { id, nome, setorIds, jornadaTrabalho, dias: [ { dia, valor, motivo, id } ] } ] }]
+  const [dados, setDados] = useState([]); 
   const [feriados, setFeriados] = useState([]);
   const [notificacao, setNotificacao] = useState({ open: false, tipo: 'success', mensagem: '' });
   const [setores, setSetores] = useState([]);
   const [setoresCarregados, setSetoresCarregados] = useState(false);
   const [setorSelecionado, setSetorSelecionado] = useState('');
   const [modalAberto, setModalAberto] = useState(false);
-  const [diaSelecionado, setDiaSelecionado] = useState(null); // { colaboradorId, setorId, diaIndex, valor, motivo, id }
+  const [diaSelecionado, setDiaSelecionado] = useState(null); 
   const [novoValor, setNovoValor] = useState('');
   const [motivo, setMotivo] = useState('');
   const token = localStorage.getItem('token');
@@ -63,25 +63,29 @@ const JornadaColaboradores = () => {
     }
   };
 
-  // 2) Monta as jornadas no frontend usando jornadaTrabalho, FER e FDS
+  // 2) Monta as jornadas no frontend combinando dados fictícios com dados do backend
   const fetchDados = async () => {
     try {
       // 2.1) Buscar usuários
       const uRes = await api.get('/usuarios', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const usuarios = uRes.data; // array de { id, nome, setorIds: [...], jornadaTrabalho: "HH:mm", ... }
+      const usuarios = uRes.data; 
 
       // 2.2) Buscar feriados do ano
       const fRes = await fetch(`https://brasilapi.com.br/api/feriados/v1/${ano}`).then(r => r.json());
-      // filtrar apenas feriados do mês selecionado
       const feriadosMes = fRes.filter(f => dayjs(f.date).month() + 1 === mes);
       setFeriados(feriadosMes);
 
-      // 2.3) Para cada usuário, criar array de dias preenchido:
-      //      - Se for fim de semana: valor = 'FDS'
-      //      - Se for feriado: valor = 'FER'
-      //      - Caso contrário: valor = user.jornadaTrabalho (ex: "08:00")
+      // 2.3) Buscar jornadas já existentes do backend (no formato { jornada: [...] })
+      const jRes = await api.get('/jornadas/retornar-jornadas', {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { mes, ano }
+      });
+      const jornadasBackend = jRes.data.jornada || []; 
+      // cada item tem { id, dia, mes, ano, motivo, valor, colaborador:{ id, nome } }
+
+      // 2.4) Para cada usuário, criar array de dias preenchido com valores padrão, depois sobrescrever com backend
       const usuariosComDias = usuarios.map(user => {
         const dias = Array.from({ length: diasNoMes }, (_, idx) => {
           const diaData = dayjs(
@@ -89,8 +93,8 @@ const JornadaColaboradores = () => {
           );
           const isWeekend = [0, 6].includes(diaData.day());
           const isFeriado = feriadosMes.some(f => dayjs(f.date).date() === diaData.date());
-          let valorPadrao = '';
 
+          let valorPadrao;
           if (isFeriado) {
             valorPadrao = 'FER';
           } else if (isWeekend) {
@@ -103,7 +107,7 @@ const JornadaColaboradores = () => {
             dia: idx + 1,
             valor: valorPadrao,
             motivo: '',
-            id: null // Todos serão criados em bloco; id será atribuído pelo backend
+            id: null 
           };
         });
 
@@ -116,13 +120,30 @@ const JornadaColaboradores = () => {
         };
       });
 
-      // 2.4) Mapear setores por id → nome
+      // 2.5) Sobrescrever cada dia com os dados recebidos do backend
+      jornadasBackend.forEach(entry => {
+        if (entry.ano === ano && entry.mes === mes) {
+          const colaboradorId = entry.colaborador.id;
+          const diaIndex = entry.dia - 1; 
+          const usuarioObj = usuariosComDias.find(u => u.id === colaboradorId);
+          if (usuarioObj && usuarioObj.dias[diaIndex]) {
+            usuarioObj.dias[diaIndex] = {
+              dia: entry.dia,
+              valor: entry.valor,
+              motivo: entry.motivo || '',
+              id: entry.id
+            };
+          }
+        }
+      });
+
+      // 2.6) Mapear setores por id → nome
       const setorMap = {};
       setores.forEach(setor => {
         setorMap[setor.id] = setor.nome;
       });
 
-      // 2.5) Agrupar usuários por setor (usar setorIds[0] como setor principal; se não existir, "Outros")
+      // 2.7) Agrupar usuários por setor
       const dadosPorSetor = {};
       usuariosComDias.forEach(userObj => {
         const setorPrincipalId =
@@ -139,18 +160,18 @@ const JornadaColaboradores = () => {
         }
         dadosPorSetor[nomeSetor].push({
           ...userObj,
-          setorId: setorPrincipalId || 0 // se sem setor, 0
+          setorId: setorPrincipalId || 0 
         });
       });
 
-      // 2.6) Montar estado final
+      // 2.8) Montar estado final
       const arr = Object.entries(dadosPorSetor).map(([setor, colaboradores]) => ({
         setor,
         colaboradores
       }));
       setDados(arr);
 
-      // 2.7) Ajustar setorSelecionado se necessário
+      // 2.9) Ajustar setorSelecionado se necessário
       if (Object.keys(dadosPorSetor).length > 0) {
         if (!arr.find(item => item.setor === setorSelecionado)) {
           setSetorSelecionado(arr[0].setor);
@@ -182,13 +203,13 @@ const JornadaColaboradores = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mes, ano, setoresCarregados]);
 
-  // 5) Função para converter "HH:mm" em horas decimais
+  // 5) Converter "HH:mm" em horas decimais
   const parseHoras = valor => {
     const [h, m] = valor.split(':').map(Number);
     return isNaN(h) ? 0 : h + (m || 0) / 60;
   };
 
-  // 6) Handler para quando usuário clica em uma célula de dia — abre modal de edição
+  // 6) Abre modal ao clicar numa célula
   const abrirModal = (colaborador, idxDia) => {
     const diaObj = colaborador.dias[idxDia];
     setDiaSelecionado({
@@ -205,10 +226,10 @@ const JornadaColaboradores = () => {
     setModalAberto(true);
   };
 
-  // 7) Handler para salvar apenas no estado local (sem chamadas de API imediatas)
+  // 7) Salva alterações apenas no estado local
   const salvarLocalmente = () => {
     if (!diaSelecionado) return;
-    const { colaboradorId, setorId, diaIndex, dia } = diaSelecionado;
+    const { colaboradorId, diaIndex, dia } = diaSelecionado;
 
     setDados(prevDados => {
       return prevDados.map(setorItem => {
@@ -220,7 +241,7 @@ const JornadaColaboradores = () => {
                 dia,
                 valor: novoValor,
                 motivo,
-                id: null // continua null; será criado em lote depois
+                id: diaSelecionado.id // mantém o id se existir (se for edição), ou null
               };
               return { ...col, dias: novosDias };
             }
@@ -236,45 +257,73 @@ const JornadaColaboradores = () => {
     setNotificacao({ open: true, tipo: 'success', mensagem: 'Valor atualizado localmente.' });
   };
 
-  // 8) Handler para efetivar o POST em lote — somente para o setor selecionado
+  // 8) Envia ao backend apenas o setor selecionado, mesclando itens criados e atualizados
   const cadastrarJornadas = async () => {
     try {
-      // A) Encontrar apenas o objeto do setor atualmente selecionado
       const setorObj = dados.find(item => item.setor === setorSelecionado);
       if (!setorObj || setorObj.colaboradores.length === 0) {
         setNotificacao({ open: true, tipo: 'warning', mensagem: 'Nenhum colaborador neste setor.' });
         return;
       }
 
-      // B) Construir array de objetos, um por dia/lançamento, apenas para esse setor
-      const payloadArray = [];
+      // Prepara payload combinando createMany e updateMany se necessário
+      const toCreate = []; // novos registros (id === null)
+      const toUpdate = []; // registros existentes com id
+
       setorObj.colaboradores.forEach(col => {
         col.dias.forEach(d => {
-          payloadArray.push({
-            colaboradorId: col.id,
-            setorId: col.setorId,
-            ano,
-            mes,
-            dia: d.dia,
-            valor: d.valor,
-            motivo: d.motivo || ''
-          });
+          if (d.id) {
+            // existe no banco → atualizar
+            toUpdate.push({
+              id: d.id,
+              motivo: d.motivo,
+              valor: d.valor
+            });
+          } else {
+            // não existe → criar
+            toCreate.push({
+              colaboradorId: col.id,
+              setorId: col.setorId,
+              ano,
+              mes,
+              dia: d.dia,
+              valor: d.valor,
+              motivo: d.motivo || ''
+            });
+          }
         });
       });
 
-      // C) Chamar endpoint em lote apenas com payloadArray desse setor
-      await api.post(
-        '/jornadas/criar-jornada',
-        payloadArray,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      // 8.1) Executar atualizações existentes (PUT) em loop
+      for (let upd of toUpdate) {
+        await api.put(
+          `/jornadas/editar-jornada/${upd.id}`,
+          { valor: upd.valor, motivo: upd.motivo },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
 
-      setNotificacao({ open: true, tipo: 'success', mensagem: 'Jornadas cadastradas com sucesso!' });
+      // 8.2) Criar novos (se houver)
+      if (toCreate.length > 0) {
+        await api.post(
+          '/jornadas/criar-jornada',
+          toCreate,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
+
+      setNotificacao({ open: true, tipo: 'success', mensagem: 'Jornadas sincronizadas com sucesso!' });
+      // Após sucesso, recarrega para garantir estado atualizado
+      fetchDados();
     } catch (error) {
+      const backendMsg =
+        error.response && error.response.data && error.response.data.message
+          ? error.response.data.message
+          : 'Erro ao cadastrar jornadas.';
       setNotificacao({
         open: true,
         tipo: 'error',
-        mensagem: error.response.data.message
+        mensagem: backendMsg
       });
     }
   };
@@ -389,7 +438,6 @@ const JornadaColaboradores = () => {
                   </TableHead>
                   <TableBody>
                     {colaboradores.map(col => {
-                      // Somar apenas horários no formato HH:mm, ignorando 'FER' e 'FDS'
                       const total = col.dias.reduce((sum, d) => {
                         if (d.valor && /\d{2}:\d{2}/.test(d.valor)) {
                           return sum + parseHoras(d.valor);
@@ -471,7 +519,7 @@ const JornadaColaboradores = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Botão para Cadastrar Jornada em lote (apenas setor selecionado) */}
+      {/* Botão para sincronizar jornadas (createMany + updateMany apenas para setor selecionado) */}
       <Box mt={2}>
         <Button
           variant="contained"
