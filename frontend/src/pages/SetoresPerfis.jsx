@@ -17,6 +17,14 @@ const SetoresPerfis = () => {
 
   const token = localStorage.getItem('token');
 
+  function criarSlug(text) {
+    return text
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, "")
+      .toLowerCase();
+  }
+
   const fetchData = async () => {
     if (!token) return;
 
@@ -42,7 +50,9 @@ const SetoresPerfis = () => {
     const endpoint = tipo === 'setor' ? '/setores' : '/perfis';
     const payload = tipo === 'perfil'
       ? { nome: form.nome, detalhes: form.descricao, tipo: form.tipo }
-      : { nome: form.nome, descricao: form.descricao, tipo: form.tipo };
+      : { nome: form.nome, descricao: form.descricao, slug: (form.nome) };
+
+
 
     try {
       if (editingId) {
@@ -50,13 +60,14 @@ const SetoresPerfis = () => {
           headers: { Authorization: `Bearer ${token}` }
         });
       } else {
+        payload.slug = criarSlug(payload.nome)
         await api.post(endpoint, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
 
       setOpenDialog(false);
-      setForm({ nome: '', descricao: '', tipo: '' });
+      setForm({ nome: '', descricao: '' });
       setEditingId(null);
       fetchData();
     } catch (err) {
@@ -67,7 +78,7 @@ const SetoresPerfis = () => {
 
   const handleEdit = (item, tipoItem) => {
     setTipo(tipoItem);
-    setForm({ nome: item.nome, descricao: item.descricao, tipo: item.tipo });
+    setForm({ nome: item.nome, descricao: item.descricao });
     setEditingId(item.id);
     setOpenDialog(true);
   };
@@ -100,13 +111,13 @@ const SetoresPerfis = () => {
   return (
     <Box p={3}>
       <Typography variant="h5">Setores</Typography>
+      <br />
       <Button variant="contained" onClick={() => { setTipo('setor'); setOpenDialog(true); }}>Novo Setor</Button>
       <Table sx={{ mt: 2 }}>
         <TableHead>
           <TableRow>
             <TableCell>Nome</TableCell>
             <TableCell>Descrição</TableCell>
-            <TableCell>Tipo</TableCell>
             <TableCell>Ações</TableCell>
           </TableRow>
         </TableHead>
@@ -115,7 +126,6 @@ const SetoresPerfis = () => {
             <TableRow key={s.id}>
               <TableCell>{s.nome}</TableCell>
               <TableCell>{s.descricao}</TableCell>
-              <TableCell>{s.tipo}</TableCell>
               <TableCell>
                 <IconButton onClick={() => handleEdit(s, 'setor')}><Edit /></IconButton>
                 <IconButton onClick={() => setConfirmDelete({ open: true, tipo: 'setor', id: s.id })}><Delete /></IconButton>
@@ -126,13 +136,13 @@ const SetoresPerfis = () => {
       </Table>
 
       <Typography variant="h5" mt={4}>Perfis</Typography>
+      <br />
       <Button variant="contained" onClick={() => { setTipo('perfil'); setOpenDialog(true); }}>Novo Perfil</Button>
       <Table sx={{ mt: 2 }}>
         <TableHead>
           <TableRow>
             <TableCell>Nome</TableCell>
             <TableCell>Detalhes</TableCell>
-            <TableCell>Tipo</TableCell>
             <TableCell>Ações</TableCell>
           </TableRow>
         </TableHead>
@@ -141,7 +151,6 @@ const SetoresPerfis = () => {
             <TableRow key={p.id}>
               <TableCell>{p.nome}</TableCell>
               <TableCell>{p.detalhes}</TableCell>
-              <TableCell>{p.tipo}</TableCell>
               <TableCell>
                 <IconButton onClick={() => handleEdit(p, 'perfil')}><Edit /></IconButton>
                 <IconButton onClick={() => setConfirmDelete({ open: true, tipo: 'perfil', id: p.id })}><Delete /></IconButton>
@@ -156,7 +165,6 @@ const SetoresPerfis = () => {
         <DialogContent>
           <TextField label="Nome" fullWidth margin="dense" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
           <TextField label={tipo === 'setor' ? 'Descrição' : 'Detalhes'} fullWidth margin="dense" value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} />
-          <TextField label="Tipo" fullWidth margin="dense" value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value })} />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDialog(false)}>Cancelar</Button>

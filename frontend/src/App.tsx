@@ -17,6 +17,7 @@ import Mercado from './pages/setores/Mercado';
 import Promocoes from './pages/setores/Promocoes';
 import Geral from './pages/setores/Geral';
 import JornadaColaboradores from './pages/JornadaColaboradores';
+import SetorPage from './pages/setores/SetorPage';
 
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem('token');
@@ -42,15 +43,10 @@ function App() {
         {/* Login fora do layout */}
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/setor/Marketing" element={<Marketing />} />
         <Route path="/setor/Comercial" element={<Comercial />} />
         <Route path="/setor/Design" element={<Design />} />
-        <Route path="/setor/CallCenter" element={<CallCenter />} />
-        <Route path="/setor/Administracao" element={<Administracao />} />
-        <Route path="/setor/RedesSociais" element={<RedesSociais />} />
-        <Route path="/setor/Mercado" element={<Mercado />} />
-        <Route path="/setor/Promocoes" element={<Promocoes />} />
         <Route path="/setor/Geral" element={<Geral />} />
+        <Route path="/setor/:slug" element={<SetorPage />} />
 
         {/* Rotas protegidas dentro do layout com a AppBar */}
         <Route element={<LayoutComBarra />}>

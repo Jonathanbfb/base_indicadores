@@ -148,12 +148,12 @@ const LayoutBase = () => {
                 </Typography>
 
                 <Grid container spacing={3} justifyContent="center">
-                  {setores.map(({ nome, id, tipo }) => (
+                  {setores.map(({ nome, id, slug }) => (
                     <Grid item xs={12} sm={6} md={3} key={id}>
                       <motion.div whileHover={{ scale: 1.05, y: -5 }} transition={{ duration: 0.3 }} style={{ height: '100%' }}>
                         <Paper
                           component={RouterLink}
-                          to={`/setor/${tipo.replace(/\s+/g, '')}`}
+                          to={`/setor/${slug}`}
                           state={{ setorId: id }}
                           elevation={4}
                           sx={{
