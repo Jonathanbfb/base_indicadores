@@ -1,13 +1,9 @@
-const prisma = require('../prisma/client');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
-// retorna o resumo de jornadas pelo setorId que vem do parametro da requisição
 const retornarResumoSetor = async (req, res) => {
   const { setorId } = req.params;
   const { ano } = req.query;
-
-  if (!setorId) {
-    return res.status(400).json({ error: "É obrigatório passar o id o setor como paramêtro." });
-  }
 
   if (!ano) {
     return res.status(400).json({ error: "É obrigatório passar o ano como query param." });
@@ -43,8 +39,10 @@ const retornarResumoSetor = async (req, res) => {
       let totalMinutos = 0;
 
       listaJornadas.forEach(({ colaboradorId, valor }) => {
+        // 1) normaliza espaços: 
         const valorTrim = String(valor).trim();
 
+        // 2) valida formato "HH:MM"
         if (!valorTrim || !/^\d{2}:\d{2}$/.test(valorTrim)) return;
 
         const [horasStr, minutosStr] = valorTrim.split(':');

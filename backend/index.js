@@ -8,9 +8,10 @@ const authRoutes = require('./routes/authRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');
 const setorRoutes = require('./routes/setorRoutes');
 const perfilRoutes = require('./routes/perfilRoutes');
-const itensRouter = require('./routes/itensRoutes');
+const itensRouter = require('./routes/itens');
 const historicoRoutes = require('./routes/historicoRoutes')
-const jornadaRoutes = require('./routes/jornadaRoutes');
+const atualizarItemRoutes = require('./routes/atualizarItem');
+const jornadaRoutes = require('./routes/jornada');
 const propostasRoute = require('./routes/propostas');
 
 app.use(cors({ origin: '*', credentials: true }));
@@ -25,6 +26,7 @@ app.use('/api/setores', setorRoutes);
 app.use('/api/perfis', perfilRoutes);
 app.use('/api/itens', itensRouter);
 app.use('/api/historico', historicoRoutes);
+app.use('/api', atualizarItemRoutes);
 
 app.get('/', (req, res) => res.send('API Online'));
 
@@ -72,7 +74,7 @@ const criarUsuariosPadrao = async () => {
           id: 1,
           nome: 'Setor Padrão',
           descricao: 'Setor para o usuário master',
-          tipo: 'Administrador'
+          slug: ''
         }
       });
 

@@ -7,8 +7,6 @@ router.get('/', extractEmailFromJWT, itemController.listarItens);
 router.get('/valor/:id', itemController.listarValorItens);
 router.get('/:id', itemController.buscarItemPorId);
 router.put('/:id', itemController.atualizarItem);
-router.put('/atualizar-item/:id', autenticar, itemController.atualizarValoresItem);
 router.delete('/:id', itemController.excluirItem);
-
 
 module.exports = router;
