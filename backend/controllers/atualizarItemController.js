@@ -4,6 +4,8 @@ const atualizarValoresItem = async (req, res) => {
   try {
     const { itemId, setorId, ano, mes, valorFieam, valorSesi, valorSenai, valorIel, totalGeral, estrategia } = req.body;
 
+    console.log(req.body)
+
     const historicoExistente = await prisma.historico.findFirst({
       where: {
         itemId: Number(itemId),
@@ -66,6 +68,54 @@ const atualizarValoresItem = async (req, res) => {
         }
       });
     }
+
+    // atualizar o valor para a instituição FIEAM
+    await prisma.valor_item.updateMany({
+      where: {
+        item_id: itemId,
+        mes: Number(mes),
+        instituicao_id: 1
+      },
+      data: {
+        valor: Number(valorFieam)
+      }
+    })
+
+    // atualizar o valor para a instituição SESI
+    await prisma.valor_item.updateMany({
+      where: {
+        item_id: itemId,
+        mes: Number(mes),
+        instituicao_id: 2
+      },
+      data: {
+        valor: Number(valorSesi)
+      }
+    })
+
+    // atualizar o valor para a instituição SENAI
+    await prisma.valor_item.updateMany({
+      where: {
+        item_id: itemId,
+        mes: Number(mes),
+        instituicao_id: 3
+      },
+      data: {
+        valor: Number(valorSenai)
+      }
+    })
+
+    // atualizar o valor para a instituição IEL
+    await prisma.valor_item.updateMany({
+      where: {
+        item_id: itemId,
+        mes: Number(mes),
+        instituicao_id: 4
+      },
+      data: {
+        valor: Number(valorIel)
+      }
+    })
 
     res.status(200).json({ message: 'Histórico atualizado com sucesso.', historico: novoHistorico });
   } catch (error) {

@@ -8,9 +8,9 @@ const authRoutes = require('./routes/authRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');
 const setorRoutes = require('./routes/setorRoutes');
 const perfilRoutes = require('./routes/perfilRoutes');
-const itensRouter = require('./routes/itens');
-const atualizarItemRoutes = require('./routes/atualizarItem');
-const jornadaRoutes = require('./routes/jornada');
+const itensRouter = require('./routes/itensRoutes');
+const historicoRoutes = require('./routes/historicoRoutes')
+const jornadaRoutes = require('./routes/jornadaRoutes');
 const propostasRoute = require('./routes/propostas');
 
 app.use(cors({ origin: '*', credentials: true }));
@@ -18,13 +18,13 @@ app.use(express.json());
 
 app.use('/api/propostas', propostasRoute);
 
-app.use('/jornada', jornadaRoutes);
+app.use('/api/jornadas', jornadaRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/setores', setorRoutes);
 app.use('/api/perfis', perfilRoutes);
 app.use('/api/itens', itensRouter);
-app.use('/api', atualizarItemRoutes);
+app.use('/api/historico', historicoRoutes);
 
 app.get('/', (req, res) => res.send('API Online'));
 
@@ -82,7 +82,7 @@ const criarUsuariosPadrao = async () => {
           email: 'master@fieam.org.br',
           senha: 'admin123',
           statusSenha: true,
-          jornadaTrabalho: new Date('1970-01-01T08:00:00.000Z'),
+          jornadaTrabalho: '00:00',
           perfil: { connect: { id: 1 } },
           usuarioSetores: {
             create: [

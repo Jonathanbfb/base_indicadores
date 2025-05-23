@@ -17,7 +17,7 @@ const listar = async (req, res) => {
       statusSenha: u.statusSenha,
       perfilId: u.perfilId,
       perfil: u.perfil?.nome,
-      jornadaTrabalho: u.jornadaTrabalho.toISOString().slice(11, 16),
+      jornadaTrabalho: u.jornadaTrabalho,
       setorIds: u.usuarioSetores.map((s) => s.setorId)
     }));
 
@@ -28,18 +28,19 @@ const listar = async (req, res) => {
   }
 };
 
-// Criar usuário
+// função para criar os usuarios
 const criar = async (req, res) => {
   const { nome, email, senha, jornadaTrabalho, statusSenha, perfilId, setorIds = [] } = req.body;
 
+  // tenta criar o novo usuario
   try {
-    const novo = await prisma.usuario.create({
+    const novoUsuario = await prisma.usuario.create({
       data: {
         nome,
         email,
         senha,
         statusSenha,
-        jornadaTrabalho: new Date(`1970-01-01T${jornadaTrabalho}`),
+        jornadaTrabalho,
         perfil: { connect: { id: perfilId } },
         usuarioSetores: {
           create: setorIds.map((id) => ({
@@ -49,10 +50,14 @@ const criar = async (req, res) => {
       }
     });
 
-    res.status(201).json({ mensagem: 'Usuário cadastrado com sucesso!', usuario: novo });
+    // retorna um status code 201 (created) caso o usuario seja cadastrado!
+    res.status(201).json({ mensagem: 'Usuário cadastrado com sucesso!', usuario: novoUsuario });
   } catch (error) {
+
     console.error('Erro ao criar usuário:', error);
-    res.status(400).json({ erro: error.message });
+
+    // retorna um erro 500 (internal server error) caso tenha acontecido algum erro interno!
+    res.status(500).json({ erro: error.message });
   }
 };
 
@@ -69,7 +74,7 @@ const editar = async (req, res) => {
       data: {
         nome,
         email,
-        jornadaTrabalho: new Date(`1970-01-01T${jornadaTrabalho}`),
+        jornadaTrabalho, //new Date(`1970-01-01T${jornadaTrabalho}`),
         statusSenha,
         perfil: { connect: { id: perfilId } },
         ...(senha && { senha, statusSenha: true }),

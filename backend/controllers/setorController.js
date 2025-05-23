@@ -1,8 +1,47 @@
 const prisma = require('../prisma/client');
 
 const listar = async (req, res) => {
-  const setores = await prisma.setor.findMany();
-  res.json(setores);
+  const email = req.email;
+  const perfilId = req.perfilId;
+
+  const usuario = await prisma.usuario.findUnique({
+    where: {
+      email: email
+    },
+    select: {
+      usuarioSetores: {
+        select: {
+          setorId: true,
+        }
+      }
+    }
+  })
+
+  if (perfilId === 1) {
+    const setorAdm = await prisma.setor.findMany({
+      where: {
+        nome: {
+          not: "Setor Padrão"
+        }
+      }
+    });
+
+    res.json(setorAdm)
+  } else {
+    const setorIds = usuario.usuarioSetores.map(user => user.setorId)
+    const setores = await prisma.setor.findMany({
+      where: {
+        id: {
+          in: setorIds
+        },
+        nome: {
+          not: "Setor Padrão"
+        }
+      }
+    });
+    res.json(setores);
+  }
+
 };
 
 const criar = async (req, res) => {

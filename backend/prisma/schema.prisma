@@ -7,52 +7,35 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model DiasUteis {
-  id               Int      @id @default(autoincrement())
-  setorId          Int
-  mes              String
-  ano              Int
-  diasUteis        Int
-  colaboradorId    Int
-  horasJornada     DateTime
-  feriasAbonoExtra Float
-  periodo          String
-  usuario          Usuario  @relation(fields: [colaboradorId], references: [id])
-  setor            Setor    @relation(fields: [setorId], references: [id])
-
-  @@index([colaboradorId])
-  @@index([setorId])
-}
-
 model Historico {
   id            Int      @id @default(autoincrement())
   usuarioId     Int
   itemId        Int
   setorId       Int
   ano           Int
-  mes           String
+  mes           Int
   valorFieam    Float
   valorSesi     Float
   valorSenai    Float
   valorIel      Float
   totalGeral    Float
   dataAlteracao DateTime @default(now())
-  item          Item     @relation(fields: [itemId], references: [id])
+  item          Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
   setor         Setor    @relation(fields: [setorId], references: [id])
   usuario       Usuario  @relation(fields: [usuarioId], references: [id])
 
   @@index([itemId])
   @@index([setorId])
   @@index([usuarioId])
+  @@map("historicos")
 }
-
-
-
 
 model Instituicao {
   id      Int          @id @default(autoincrement())
   nome    String       @unique
   valores valor_item[]
+
+  @@map("instituicoes")
 }
 
 model Item {
@@ -62,9 +45,12 @@ model Item {
   setor_id  Int
   setor     Setor        @relation(fields: [setor_id], references: [id])
   ano       Int
+  atividade Boolean      @default(false)
   valores   valor_item[]
   createdAt DateTime     @default(now())
   Historico Historico[]
+
+  @@map("items")
 }
 
 model Perfil {
@@ -73,18 +59,22 @@ model Perfil {
   detalhes String?
   tipo     String
   usuarios Usuario[]
+
+  @@map("perfis")
 }
 
 model Setor {
-  id             Int            @id @default(autoincrement())
-  nome           String         @unique
-  descricao      String?
-  tipo           String
-  diasUteis      DiasUteis[]
-  historicos     Historico[]
-  itens          Item[]
-  usuarios       Usuario[]
-  usuarioSetores UsuarioSetor[]
+  id                   Int                    @id @default(autoincrement())
+  nome                 String                 @unique
+  descricao            String?
+  tipo                 String
+  historicos           Historico[]
+  itens                Item[]
+  usuarios             Usuario[]
+  usuarioSetores       UsuarioSetor[]
+  JornadaColaboradores JornadaColaboradores[]
+
+  @@map("setores")
 }
 
 model Usuario {
@@ -92,19 +82,19 @@ model Usuario {
   nome            String
   email           String                 @unique
   senha           String
-  jornadaTrabalho DateTime
+  jornadaTrabalho String
   statusSenha     Boolean                @default(true)
   perfilId        Int
   setorId         Int?
   perfil          Perfil                 @relation(fields: [perfilId], references: [id])
   setor           Setor?                 @relation(fields: [setorId], references: [id])
-  diasUteis       DiasUteis[]
   historicos      Historico[]
   usuarioSetores  UsuarioSetor[]
   jornadas        JornadaColaboradores[] // <- RELAÇÃO INVERTIDA ADICIONADA
 
   @@index([perfilId])
   @@index([setorId])
+  @@map("usuarios")
 }
 
 model UsuarioSetor {
@@ -115,30 +105,33 @@ model UsuarioSetor {
 
   @@id([usuarioId, setorId])
   @@index([setorId])
+  @@map("usuario_setor")
 }
 
 model valor_item {
-  id             Int      @id @default(autoincrement())
+  id             Int         @id @default(autoincrement())
   item_id        Int
   instituicao_id Int
   mes            Int
-  valor          Decimal? @default(0.00) @db.Decimal(10, 2)
-
-  item        Item        @relation(fields: [item_id], references: [id])
-  instituicao Instituicao @relation(fields: [instituicao_id], references: [id])
+  valor          Decimal?    @default(0.00)
+  item           Item        @relation(fields: [item_id], references: [id], onDelete: Cascade)
+  instituicao    Instituicao @relation(fields: [instituicao_id], references: [id])
 }
 
 model JornadaColaboradores {
   id            Int      @id @default(autoincrement())
   colaborador   Usuario  @relation(fields: [colaboradorId], references: [id], onDelete: Cascade)
   colaboradorId Int
+  setorId       Int
+  setor         Setor    @relation(fields: [setorId], references: [id], onDelete: Cascade)
   ano           Int
   mes           Int
   dia           Int
-  valor         String   @default("08:00")
+  valor         String
   motivo        String?
   criadoEm      DateTime @default(now())
-  atualizadoEm  DateTime @updatedAt
+  atualizadoEm  DateTime @default(now())
 
   @@unique([colaboradorId, ano, mes, dia])
+  @@map("jornada_colaboradores")
 }
