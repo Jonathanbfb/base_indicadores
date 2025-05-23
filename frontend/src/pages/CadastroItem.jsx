@@ -1,8 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Box, Typography, TextField, Button, MenuItem, Grid, Paper, Chip, IconButton, Table, TableHead, TableRow, TableCell, TableBody
+  Box,
+  Typography,
+  TextField,
+  Button,
+  MenuItem,
+  Grid,
+  Paper,
+  Chip,
+  IconButton,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  FormControlLabel,
+  Tabs,
+  Tab,
+  Checkbox,
+  TableContainer
 } from '@mui/material';
-import { Tabs, Tab } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import api from '../services/api';
@@ -11,15 +28,17 @@ const CadastroItem = () => {
   const [setores, setSetores] = useState([]);
   const [itens, setItens] = useState([]);
   const [instituicoes, setInstituicoes] = useState(['FIEAM', 'SESI', 'SENAI', 'IEL']);
-  const [novaInstituicao, setNovaInstituicao] = useState('');
   const [editandoId, setEditandoId] = useState(null);
+
+  // abaSetor agora representa o índice no array 'setores'
   const [abaSetor, setAbaSetor] = useState(0);
 
   const [form, setForm] = useState({
     nome: '',
     detalhes: '',
     setorId: '',
-    ano: new Date().getFullYear()
+    ano: new Date().getFullYear(),
+    atividade: false
   });
 
   const currentYear = new Date().getFullYear();
@@ -44,6 +63,7 @@ const CadastroItem = () => {
         const res = await api.get('/itens', {
           headers: { Authorization: `Bearer ${token}` }
         });
+        console.log('Itens recebidos da API:', res.data);
         setItens(res.data);
       } catch (err) {
         console.error('Erro ao carregar itens', err);
@@ -55,24 +75,21 @@ const CadastroItem = () => {
   }, [token]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
-  };
-
-  const adicionarInstituicao = () => {
-    const nova = novaInstituicao.trim().toUpperCase();
-    if (nova !== '' && !instituicoes.includes(nova)) {
-      setInstituicoes([...instituicoes, nova]);
-      setNovaInstituicao('');
+    const { name, value, checked, type } = e.target;
+    // no caso do checkbox, usar checked, senão value
+    if (type === 'checkbox') {
+      setForm((prev) => ({ ...prev, [name]: checked }));
+    } else {
+      setForm((prev) => ({ ...prev, [name]: value }));
     }
   };
 
   const removerInstituicao = (nome) => {
-    setInstituicoes(instituicoes.filter(inst => inst !== nome));
+    setInstituicoes((prev) => prev.filter((inst) => inst !== nome));
   };
 
   const limparFormulario = () => {
-    setForm({ nome: '', detalhes: '', setorId: '', ano: currentYear });
+    setForm({ nome: '', detalhes: '', setorId: '', ano: currentYear, atividade: false });
     setInstituicoes(['FIEAM', 'SESI', 'SENAI', 'IEL']);
     setEditandoId(null);
   };
@@ -80,6 +97,7 @@ const CadastroItem = () => {
   const handleSubmit = async () => {
     try {
       const payload = { ...form, instituicoes };
+      console.log('Payload a ser enviado:', payload);
 
       if (editandoId) {
         await api.put(`/itens/${editandoId}`, payload, {
@@ -95,6 +113,7 @@ const CadastroItem = () => {
 
       limparFormulario();
 
+      // Recarregar lista de itens após inserir/atualizar
       const res = await api.get('/itens', {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -104,13 +123,18 @@ const CadastroItem = () => {
     }
   };
 
-  const handleEditar = async (item) => {
+  const handleEditar = (item) => {
     setForm({
       nome: item.nome,
       detalhes: item.detalhes,
-      setorId: item.setor_id,
-      ano: item.ano
+      setorId: item.setor_id, // ou item.setor.id
+      ano: item.ano,
+      atividade: item.atividade
     });
+    // Se o item tiver array de instituições, você pode setar também:
+    if (item.instituicoes) {
+      setInstituicoes(item.instituicoes);
+    }
     setEditandoId(item.id);
   };
 
@@ -120,56 +144,108 @@ const CadastroItem = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert('Item excluído com sucesso!');
-      setItens(itens.filter((item) => item.id !== id));
+      setItens((prev) => prev.filter((item) => item.id !== id));
     } catch (error) {
       console.error('Erro ao excluir item:', error);
     }
   };
 
+  // Se ainda não houver setores carregados, não renderiza nada
+  if (!setores.length) {
+    return (
+      <Box p={3}>
+        <Typography>Carregando setores...</Typography>
+      </Box>
+    );
+  }
+
+  // Quando mudar a aba, abaSetor será o índice em `setores`
+  const setorSelecionado = setores[abaSetor];
+
   return (
     <Box p={3}>
       <Paper sx={{ p: 4, mb: 4 }}>
         <Typography variant="h5" mb={2}>
-          {editandoId ? 'Editar Indicadores' : 'Cadastro de Indicadores'}
+          {editandoId ? 'Editar Indicador' : 'Cadastro de Indicador'}
         </Typography>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
-            <TextField label="Nome do Indicador" name="nome" fullWidth value={form.nome} onChange={handleChange} />
+            <TextField
+              label="Nome do Indicador"
+              name="nome"
+              fullWidth
+              value={form.nome}
+              onChange={handleChange}
+            />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <TextField label="Detalhes" name="detalhes" fullWidth value={form.detalhes} onChange={handleChange} />
+            <TextField
+              label="Detalhes"
+              name="detalhes"
+              fullWidth
+              value={form.detalhes}
+              onChange={handleChange}
+            />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <TextField select label="Setor" name="setorId" fullWidth value={form.setorId} onChange={handleChange}>
+            <TextField
+              select
+              label="Setor"
+              name="setorId"
+              fullWidth
+              value={form.setorId}
+              onChange={handleChange}
+            >
               {setores.map((setor) => (
-                <MenuItem key={setor.id} value={setor.id}>{setor.nome}</MenuItem>
+                <MenuItem key={setor.id} value={setor.id}>
+                  {setor.nome}
+                </MenuItem>
               ))}
             </TextField>
           </Grid>
           <Grid item xs={12} sm={6}>
-            <TextField select label="Ano" name="ano" fullWidth value={form.ano} onChange={handleChange}>
+            <TextField
+              select
+              label="Ano"
+              name="ano"
+              fullWidth
+              value={form.ano}
+              onChange={handleChange}
+            >
               {anos.map((ano) => (
-                <MenuItem key={ano} value={ano}>{ano}</MenuItem>
+                <MenuItem key={ano} value={ano}>
+                  {ano}
+                </MenuItem>
               ))}
             </TextField>
           </Grid>
 
-          {/* Cadastro de novas instituições */}
-          <Grid item xs={12} sm={8}>
-            <TextField label="Nova Instituição" value={novaInstituicao} onChange={(e) => setNovaInstituicao(e.target.value)} fullWidth />
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Button variant="outlined" fullWidth sx={{ height: '100%' }} onClick={adicionarInstituicao}>
-              Adicionar Instituição
-            </Button>
-          </Grid>
           <Grid item xs={12}>
-            <Typography variant="subtitle1" gutterBottom>Instituições Selecionadas:</Typography>
+            <Typography variant="subtitle1" gutterBottom>
+              Instituições Selecionadas:
+            </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
               {instituicoes.map((inst) => (
-                <Chip key={inst} label={inst} onDelete={() => removerInstituicao(inst)} deleteIcon={<DeleteIcon />} />
+                <Chip
+                  key={inst}
+                  label={inst}
+                  onDelete={() => removerInstituicao(inst)}
+                  deleteIcon={<DeleteIcon />}
+                />
               ))}
             </Box>
+            <br />
+            <FormControlLabel
+              label="Conta como atividade?"
+              labelPlacement="end"
+              control={
+                <Checkbox
+                  name="atividade"
+                  checked={form.atividade}
+                  onChange={handleChange}
+                />
+              }
+            />
           </Grid>
         </Grid>
 
@@ -187,64 +263,92 @@ const CadastroItem = () => {
 
       {/* Tabela de Itens */}
       <Paper sx={{ p: 2 }}>
-  <Typography variant="h6" gutterBottom>Itens Cadastrados</Typography>
+        <Typography variant="h6" gutterBottom>
+          Itens Cadastrados
+        </Typography>
 
-  {/* Abas dos Setores */}
-  <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-    <Tabs
-      value={abaSetor}
-      onChange={(e, newValue) => setAbaSetor(newValue)}
-      variant="scrollable"
-      scrollButtons="auto"
-      aria-label="Abas por setor"
-    >
-      {[...Array(8)].map((_, i) => (
-        <Tab key={i} label={`Setor ${i + 1}`} />
-      ))}
-    </Tabs>
-  </Box>
+        {/* Abas dos Setores dinamicamente */}
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs
+            value={abaSetor}
+            onChange={(e, newValue) => setAbaSetor(newValue)}
+            variant="scrollable"
+            scrollButtons="auto"
+            aria-label="Abas por setor"
+          >
+            {setores.map((setor, index) => (
+              <Tab key={setor.id} label={setor.nome} />
+            ))}
+          </Tabs>
+        </Box>
 
-  {/* Conteúdo de cada aba */}
-  {[...Array(8)].map((_, i) => (
-    <Box key={i} role="tabpanel" hidden={abaSetor !== i} p={2}>
-      {abaSetor === i && (
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Nome</TableCell>
-              <TableCell>Detalhes</TableCell>
-              <TableCell>Setor</TableCell>
-              <TableCell>Ano</TableCell>
-              <TableCell>Ações</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {itens
-              .filter((item) =>
-                (item.setor?.nome || item.setor_nome) === `Setor ${i + 1}`
-              )
-              .map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>{item.nome}</TableCell>
-                  <TableCell>{item.detalhes}</TableCell>
-                  <TableCell>{item.setor?.nome || item.setor_nome}</TableCell>
-                  <TableCell>{item.ano}</TableCell>
-                  <TableCell>
-                    <IconButton color="primary" onClick={() => handleEditar(item)}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton color="error" onClick={() => handleExcluir(item.id)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-          </TableBody>
-        </Table>
-      )}
-    </Box>
-  ))}
-</Paper>
+        {/* Conteúdo da aba atual */}
+        <Box role="tabpanel" p={2}>
+          {/** Se setorSelecionado for válido, renderiza a tabela filtrada **/}
+          {setorSelecionado && (
+            <TableContainer sx={{ maxHeight: 400, overflow: 'auto' }}>
+              <Table size="small" stickyHeader>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Nome</TableCell>
+                    <TableCell>Detalhes</TableCell>
+                    <TableCell>Setor</TableCell>
+                    <TableCell>Ano</TableCell>
+                    <TableCell>Ações</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {itens
+                    // Filtra pelos itens cujo setor.id bate com o setor selecionado
+                    .filter((item) =>
+                      item.setor?.id === setorSelecionado.id ||
+                      item.setor_id === setorSelecionado.id
+                    )
+                    .map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell>{item.nome}</TableCell>
+                        <TableCell>{item.detalhes}</TableCell>
+                        <TableCell>
+                          {item.setor?.nome || setorSelecionado.nome}
+                        </TableCell>
+                        <TableCell>{item.ano}</TableCell>
+                        <TableCell>
+                          <IconButton
+                            color="primary"
+                            onClick={() => handleEditar(item)}
+                          >
+                            <EditIcon />
+                          </IconButton>
+                          <IconButton
+                            color="error"
+                            onClick={() => handleExcluir(item.id)}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+
+          {/** Se não houver itens para este setor, mostra uma mensagem **/}
+          {setorSelecionado &&
+            !itens.some(
+              (item) =>
+                item.setor?.id === setorSelecionado.id ||
+                item.setor_id === setorSelecionado.id
+            ) && (
+              <Box mt={2}>
+                <Typography variant="body2">
+                  Não há indicadores cadastrados para o setor “
+                  {setorSelecionado.nome}”.
+                </Typography>
+              </Box>
+            )}
+        </Box>
+      </Paper>
     </Box>
   );
 };

@@ -2,8 +2,8 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Grid, Box } from "@mui/material";
 import Header from "./Header";
-//import Footer from "./Footer";
-//import Sidebar from "./Sidebar";
+import Footer from "./Footer";
+import Sidebar from "./Sidebar";
 import Button from "./Button";
 
 const Indicadores: React.FC = () => {
@@ -15,7 +15,7 @@ const Indicadores: React.FC = () => {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "row", minHeight: "100vh" }}>
-      {/* <Sidebar /> */}
+      <Sidebar />
       <Box sx={{ flexGrow: 1, padding: "16px", textAlign: "center" }}>
         <Header title="DIRETORIA CORPORATIVA DE MARKETING" />
         <h2 style={{ textAlign: "center", margin: "16px 0", fontSize: "20px" }}>
@@ -72,7 +72,7 @@ const Indicadores: React.FC = () => {
           ))}
         </Grid>
 
-        {/* <Footer /> */}
+        <Footer />
       </Box>
     </Box>
   );

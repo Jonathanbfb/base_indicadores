@@ -5,7 +5,7 @@ import Menu from './pages/Menu';
 import Usuarios from './pages/Usuarios';
 import CadastroItem from './pages/CadastroItem';
 import AtualizacaoItem from './pages/AtualizacaoItem';
-import HistoricoAlteracoes from './pages/HistoricoAlteracoes';
+import HistoricoAlteracoes from './pages/setores/components/HistoricoAlteracoes';
 import LayoutComBarra from './pages/LayoutComBarra';
 import Marketing from './pages/setores/Marketing';
 import Comercial from './pages/setores/Comercial';

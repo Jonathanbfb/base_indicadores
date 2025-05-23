@@ -62,6 +62,7 @@ const Usuarios = () => {
 
       setOpenDialog(false);
       setForm({ nome: '', email: '', senha: '', setorIds: [], perfilId: '', jornadaTrabalho: '', statusSenha: false });
+      console.log(form)
       setEditingId(null);
       fetchUsuarios();
     } catch (error) {
@@ -174,7 +175,7 @@ const Usuarios = () => {
             </Select>
           </FormControl>
 
-          <TextField label="Jornada de Trabalho (ex: 08:00)" fullWidth margin="dense" value={form.jornadaTrabalho} onChange={(e) => setForm({ ...form, jornadaTrabalho: e.target.value })} />
+          <TextField label="Jornada de Trabalho (ex: 08:00)" fullWidth margin="dense" value={form.jornadaTrabalho.trim()} onChange={(e) => setForm({ ...form, jornadaTrabalho: e.target.value })} />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDialog(false)}>Cancelar</Button>

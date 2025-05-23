@@ -8,24 +8,27 @@ const Sidebar: React.FC = () => (
       padding: "10px",
       backgroundColor: "#f4f4f4",
       borderRight: "1px solid #ddd",
+      position: 'fixed',
+      top: 0,
+      right: 0,
       display: "flex",
       flexDirection: "column",
       gap: "10px",
     }}
   >
-    <h2 style={{ marginBottom: "10px", textAlign: "center" }}>Resumo 2025</h2>
+    <h2 style={{ marginTop: "80px", textAlign: "center" }}>Resumo 2025</h2>
     {[
-      { label: "Nº de clientes Industrial:", value: "1.995" },
-      { label: "Clientes visitados:", value: "687" },
-      { label: "Propostas Realizadas:", value: "1.254" },
-      { label: "Produtos existentes:", value: "1.025" },
-      { label: "Produtos Vendidos:", value: "1.632"  },
+      { label: "Nº de clientes Industrial:", value: "1.969" },
+      { label: "Clientes visitados:", value: "644" },
+      { label: "Propostas Realizadas:", value: "1.096" },
+      { label: "Produtos existentes:", value: "1.022" },
+      { label: "Produtos Vendidos:", value: "1.293"  },
     ].map((item, index) => (
       <div
         key={index}
         style={{
           backgroundColor: "#fff",
-          padding: "15px",
+          padding: "20px",
           borderRadius: "8px",
           boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
           textAlign: "center",
@@ -56,7 +59,7 @@ const Sidebar: React.FC = () => (
       </div>
       
     ))}
-    <p style={{ margin: "0", padding: "0", fontSize: "15px",textAlign:"center" }} >Atualizado em 20/05/2025</p>
+    <p style={{ margin: "0", padding: "0", fontSize: "15px",textAlign:"center" }} >Atualizado em 01/05/2025</p>
   </div>
 );
 
