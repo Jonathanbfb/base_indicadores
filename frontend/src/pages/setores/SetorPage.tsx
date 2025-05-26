@@ -183,22 +183,36 @@ export default function SetorPage() {
             const somaDoMes = indicador.valores
               .filter((v: any) => v.mes === idx + 1)
               .reduce((acc: number, cur: any) => {
-                const numero = Number(cur.valor.toString().replace(/\D/g, ""));
+                // Usa parseFloat para respeitar casas decimais
+                const numero = parseFloat(cur.valor);
                 return acc + (isNaN(numero) ? 0 : numero);
               }, 0);
 
-            // Se houver soma, formatamos com ponto como separador de milhares
-            linhaBase[mesKey] = somaDoMes > 0
-              ? somaDoMes.toLocaleString("pt-BR")
-              : "-";
+            if (somaDoMes > 0) {
+              // -> Se indicador.moeda === true, exibe como R$ x.xxx,xx
+              if (indicador.moeda) {
+                linhaBase[mesKey] = somaDoMes.toLocaleString("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                });
+              } else {
+                // Caso contrário, formata numérico “x.xxx,xx”
+                linhaBase[mesKey] = somaDoMes.toLocaleString("pt-BR", {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 2,
+                });
+              }
+            } else {
+              linhaBase[mesKey] = "-";
+            }
           });
 
-          // Calcula acumulados por instituição (mantemos a lógica original)
+          // 2) Acumulado por instituição (mantendo a mesma ideia de parseFloat)
           const somaPorInstituicao = (instId: number) => {
             return indicador.valores
               .filter((v: any) => v.instituicao_id === instId)
               .reduce((acc: number, cur: any) => {
-                const numero = Number(cur.valor.toString().replace(/\D/g, ""));
+                const numero = parseFloat(cur.valor);
                 return acc + (isNaN(numero) ? 0 : numero);
               }, 0);
           };
@@ -209,14 +223,25 @@ export default function SetorPage() {
           const somaIel = somaPorInstituicao(4);
           const somaTotal = somaFieam + somaSesi + somaSenai + somaIel;
 
-          // Formata acumulados com ponto como separador, quando > 0
-          linhaBase.acumulado.fieam = somaFieam > 0 ? somaFieam.toLocaleString("pt-BR") : "-";
-          linhaBase.acumulado.sesi = somaSesi > 0 ? somaSesi.toLocaleString("pt-BR") : "-";
-          linhaBase.acumulado.senai = somaSenai > 0 ? somaSenai.toLocaleString("pt-BR") : "-";
-          linhaBase.acumulado.iel = somaIel > 0 ? somaIel.toLocaleString("pt-BR") : "-";
-          linhaBase.acumulado["total geral"] = somaTotal > 0 ? somaTotal.toLocaleString("pt-BR") : "-";
+          // Formata acumulados com “R$” se moeda; senão numérico
+          const formatarAcumulado = (valor: number) => {
+            if (valor <= 0) return "-";
+            return indicador.moeda
+              ? valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+              : valor.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+          };
 
-          return { ...linhaBase, atividade: indicador.atividade };
+          linhaBase.acumulado.fieam = formatarAcumulado(somaFieam);
+          linhaBase.acumulado.sesi = formatarAcumulado(somaSesi);
+          linhaBase.acumulado.senai = formatarAcumulado(somaSenai);
+          linhaBase.acumulado.iel = formatarAcumulado(somaIel);
+          linhaBase.acumulado["total geral"] = formatarAcumulado(somaTotal);
+
+          return {
+            ...linhaBase,
+            atividade: indicador.atividade,
+            moeda: indicador.moeda, // guardamos a flag para uso futuro
+          };
         });
 
         // -------------------------------------------------------------
@@ -227,7 +252,8 @@ export default function SetorPage() {
             if (!row.atividade) return acc;
             const val = row[MES_KEYS[idx]];
             if (val !== "-" && val !== undefined) {
-              const numero = Number(val.toString().replace(/\D/g, ""));
+              // val já está em string no formato pt-BR; removemos separadores
+              const numero = parseFloat(val.replace(/\./g, "").replace(",", "."));
               if (!isNaN(numero)) return acc + numero;
             }
             return acc;
@@ -236,7 +262,6 @@ export default function SetorPage() {
 
         const somaAtividadesTotal = somaPorMes.reduce((a, b) => a + b, 0);
 
-        // Preenche a linha “Total de ações executadas no mês” e formata
         const linhaSomaAtividades: any = {
           indicadores: "Total de ações executadas no mês",
           jan: somaPorMes[0] > 0 ? somaPorMes[0].toLocaleString("pt-BR") : "-",
@@ -330,10 +355,10 @@ export default function SetorPage() {
             : "-";
         todasRows[2].acumulado["total geral"] =
           totalAcoesAcumuladas > 0
-            ? totalAcoesAcumuladas.toLocaleString("pt-BR")
+            ? totalAcoesAcumuladas.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })
             : "-";
 
-        // Média Horas: já definido acima em tempoMedioHhmmAcumulado
+        // Tempo médio
         todasRows[3].acumulado.fieam = tempoMedioHhmmAcumulado;
         todasRows[3].acumulado["total geral"] = tempoMedioHhmmAcumulado;
 
@@ -514,14 +539,14 @@ export default function SetorPage() {
                       {row.indicadores}
                     </TableCell>
 
-                    {/* Renderiza cada coluna de mês (já contendo soma e formatação pt-BR) */}
+                    {/* Renderiza cada coluna de mês, exibindo moeda se row.moeda === true */}
                     {MES_KEYS.map((key) => (
                       <TableCell align="center" key={key}>
                         {row[key] !== undefined ? row[key] : "-"}
                       </TableCell>
                     ))}
 
-                    {/* Renderiza as 5 colunas de Acumulado (já formatadas em pt-BR ou “h:min”) */}
+                    {/* Renderiza as 5 colunas de Acumulado (já formatadas) */}
                     {["fieam", "sesi", "senai", "iel", "total geral"].map((key) => (
                       <TableCell align="center" key={key}>
                         {row.acumulado && row.acumulado[key] !== undefined

@@ -18,7 +18,8 @@ import {
   Tabs,
   Tab,
   Checkbox,
-  TableContainer
+  TableContainer,
+  InputAdornment
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -30,7 +31,7 @@ const CadastroItem = () => {
   const [instituicoes, setInstituicoes] = useState(['FIEAM', 'SESI', 'SENAI', 'IEL']);
   const [editandoId, setEditandoId] = useState(null);
 
-  // abaSetor agora representa o índice no array 'setores'
+  // abaSetor representa o índice no array 'setores'
   const [abaSetor, setAbaSetor] = useState(0);
 
   const [form, setForm] = useState({
@@ -38,7 +39,8 @@ const CadastroItem = () => {
     detalhes: '',
     setorId: '',
     ano: new Date().getFullYear(),
-    atividade: false
+    atividade: false,
+    moeda: false // novo campo para "É valor em dinheiro"
   });
 
   const currentYear = new Date().getFullYear();
@@ -75,9 +77,23 @@ const CadastroItem = () => {
 
   const handleChange = (e) => {
     const { name, value, checked, type } = e.target;
-    // no caso do checkbox, usar checked, senão value
+
     if (type === 'checkbox') {
-      setForm((prev) => ({ ...prev, [name]: checked }));
+      if (name === 'atividade') {
+        // Se marcar "atividade", desmarca "moeda"
+        setForm((prev) => ({
+          ...prev,
+          atividade: checked,
+          moeda: checked ? false : prev.moeda
+        }));
+      } else if (name === 'moeda') {
+        // Se marcar "moeda", desmarca "atividade"
+        setForm((prev) => ({
+          ...prev,
+          moeda: checked,
+          atividade: checked ? false : prev.atividade
+        }));
+      }
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));
     }
@@ -88,7 +104,14 @@ const CadastroItem = () => {
   };
 
   const limparFormulario = () => {
-    setForm({ nome: '', detalhes: '', setorId: '', ano: currentYear, atividade: false });
+    setForm({
+      nome: '',
+      detalhes: '',
+      setorId: '',
+      ano: currentYear,
+      atividade: false,
+      moeda: false
+    });
     setInstituicoes(['FIEAM', 'SESI', 'SENAI', 'IEL']);
     setEditandoId(null);
   };
@@ -103,6 +126,7 @@ const CadastroItem = () => {
         });
         alert('Item atualizado com sucesso!');
       } else {
+        console.log(payload)
         await api.post('/itens', payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -125,11 +149,11 @@ const CadastroItem = () => {
     setForm({
       nome: item.nome,
       detalhes: item.detalhes,
-      setorId: item.setor_id, // ou item.setor.id
+      setorId: item.setor_id,
       ano: item.ano,
-      atividade: item.atividade
+      atividade: item.atividade,
+      moeda: item.moeda || false
     });
-    // Se o item tiver array de instituições, você pode setar também:
     if (item.instituicoes) {
       setInstituicoes(item.instituicoes);
     }
@@ -244,6 +268,17 @@ const CadastroItem = () => {
                 />
               }
             />
+            <FormControlLabel
+              label="É valor em dinheiro?"
+              labelPlacement="end"
+              control={
+                <Checkbox
+                  name="moeda"
+                  checked={form.moeda}
+                  onChange={handleChange}
+                />
+              }
+            />
           </Grid>
         </Grid>
 
@@ -282,7 +317,6 @@ const CadastroItem = () => {
 
         {/* Conteúdo da aba atual */}
         <Box role="tabpanel" p={2}>
-          {/** Se setorSelecionado for válido, renderiza a tabela filtrada **/}
           {setorSelecionado && (
             <TableContainer sx={{ maxHeight: 400, overflow: 'auto' }}>
               <Table size="small" stickyHeader>
@@ -297,10 +331,10 @@ const CadastroItem = () => {
                 </TableHead>
                 <TableBody>
                   {itens
-                    // Filtra pelos itens cujo setor.id bate com o setor selecionado
-                    .filter((item) =>
-                      item.setor?.id === setorSelecionado.id ||
-                      item.setor_id === setorSelecionado.id
+                    .filter(
+                      (item) =>
+                        item.setor?.id === setorSelecionado.id ||
+                        item.setor_id === setorSelecionado.id
                     )
                     .map((item) => (
                       <TableRow key={item.id}>
@@ -331,7 +365,6 @@ const CadastroItem = () => {
             </TableContainer>
           )}
 
-          {/** Se não houver itens para este setor, mostra uma mensagem **/}
           {setorSelecionado &&
             !itens.some(
               (item) =>

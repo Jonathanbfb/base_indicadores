@@ -15,28 +15,31 @@ import {
   TableHead,
   TableRow,
   TableCell,
-  TableBody
+  TableBody,
+  InputAdornment
 } from '@mui/material';
 import api from '../services/api';
 
 const AtualizacaoItem = () => {
-  const [setores, setSetores] = useState([]);          // [{ id: 1, nome: 'Comercial' }, …]
+  const [setores, setSetores] = useState([]);
   const [allItens, setAllItens] = useState([]);
-  const [historico, setHistorico] = useState([]);        // todos os itens, sem filtrar
-  const [itensFiltrados, setItensFiltrados] = useState([]); // itens que pertencem ao setor selecionado
+  const [historico, setHistorico] = useState([]);
+  const [itensFiltrados, setItensFiltrados] = useState([]);
 
   const [form, setForm] = useState({
-    setorId: '',     // string para manter coerência com TextField select
-    itemId: '',      // string para manter coerência com TextField select
+    setorId: '',
+    itemId: '',
     ano: String(new Date().getFullYear()),
     mes: '',
-    valorFieam: '',
+    valorFieam: '',  // raw string (e.g. "2000,00" or "100")
     valorSesi: '',
     valorSenai: '',
     valorIel: '',
-    totalGeral: 0,
+    totalGeral: 0,   // numeric sum
     estrategia: 'manter'
   });
+
+  const [isMoeda, setIsMoeda] = useState(false);
 
   const meses = {
     Janeiro: '1',
@@ -50,7 +53,7 @@ const AtualizacaoItem = () => {
     Setembro: '9',
     Outubro: '10',
     Novembro: '11',
-    Dezembro: '12',
+    Dezembro: '12'
   };
 
   const anos = ['2025', '2024', '2023', '2022'];
@@ -58,9 +61,10 @@ const AtualizacaoItem = () => {
 
   const limparFormulario = () => {
     setForm({
+      setorId: '',
       itemId: '',
-      mes: '',
       ano: new Date().getFullYear(),
+      mes: '',
       valorFieam: '',
       valorSesi: '',
       valorSenai: '',
@@ -69,6 +73,7 @@ const AtualizacaoItem = () => {
       estrategia: 'manter'
     });
     setItensFiltrados([]);
+    setIsMoeda(false);
   };
 
   const fetchHistorico = async () => {
@@ -95,13 +100,11 @@ const AtualizacaoItem = () => {
     }
   };
 
-  // 1) Buscar lista de setores e todos os itens ao montar
   useEffect(() => {
     fetchData();
     fetchHistorico();
   }, [token]);
 
-  // 2) Quando setorId mudar, filtrar os itens localmente
   useEffect(() => {
     if (!form.setorId) {
       setItensFiltrados([]);
@@ -113,39 +116,88 @@ const AtualizacaoItem = () => {
     setForm(prev => ({ ...prev, itemId: '' }));
   }, [form.setorId, allItens]);
 
-  // 3) Recalcula totalGeral sempre que algum valor numérico mudar
   useEffect(() => {
-    const fieam = parseFloat(form.valorFieam) || 0;
-    const sesi = parseFloat(form.valorSesi) || 0;
-    const senai = parseFloat(form.valorSenai) || 0;
-    const iel = parseFloat(form.valorIel) || 0;
-    setForm(prev => ({ ...prev, totalGeral: fieam + sesi + senai + iel }));
+    // Recalcula totalGeral sempre que algum valor numérico mudar
+    const parseRaw = raw => {
+      // converte "2.000,00" ou "2000,00" em número 2000.00
+      const num = parseFloat(raw.replace(/\./g, '').replace(',', '.'));
+      return isNaN(num) ? 0 : num;
+    };
+    const fieam = parseRaw(form.valorFieam);
+    const sesi = parseRaw(form.valorSesi);
+    const senai = parseRaw(form.valorSenai);
+    const iel = parseRaw(form.valorIel);
+    const total = fieam + sesi + senai + iel;
+    setForm(prev => ({ ...prev, totalGeral: total }));
   }, [form.valorFieam, form.valorSesi, form.valorSenai, form.valorIel]);
 
-  // 4) Handler genérico de inputs
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === 'itemId') {
+      // Ao selecionar item, checar se tem campo moeda = true
+      const selecionado = allItens.find(i => String(i.id) === value);
+      setIsMoeda(selecionado?.moeda === true);
+    }
     setForm(prev => ({
       ...prev,
       [name]: value
     }));
   };
 
+  const handleValorRawChange = (e) => {
+    // Permite dígitos e vírgula apenas. Remove pontos de milhar automaticamente
+    let raw = e.target.value.replace(/[^\d,]/g, '');
+    // Se usuário digitar mais de uma vírgula, pega só a primeira
+    const parts = raw.split(',');
+    if (parts.length > 2) {
+      raw = parts[0] + ',' + parts[1];
+    }
+    setForm(prev => ({ ...prev, [e.target.name]: raw }));
+  };
+
+  const formatCurrencyOnBlur = (name) => {
+    // Converte raw para número e depois formata pra "R$ 2.000,00"
+    const raw = form[name];
+    const num = parseFloat(raw.replace(/\./g, '').replace(',', '.'));
+    if (isNaN(num)) {
+      setForm(prev => ({ ...prev, [name]: '' }));
+      return;
+    }
+    const formatted = num.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+    // Remove "R$ " do início para armazenar somente "2.000,00"
+    const semSimbolo = formatted.replace('R$', '').trim();
+    setForm(prev => ({ ...prev, [name]: semSimbolo }));
+  };
+
+  const handleFocusValue = (name) => {
+    // Ao focar, remove qualquer formatação (retorna raw)
+    const raw = form[name];
+    if (!raw) return;
+    // In case stored as "2.000,00", deixa "2000,00"
+    const semPontos = raw.replace(/\./g, '');
+    setForm(prev => ({ ...prev, [name]: semPontos }));
+  };
+
   const handleSubmit = async () => {
     try {
+      // converte string "2.000,00" → number 2000.00
+      const parseRaw = raw => parseFloat(raw.replace(/\./g, '').replace(',', '.')) || 0;
       const payload = {
         setorId: Number(form.setorId),
         itemId: Number(form.itemId),
         ano: Number(form.ano),
         mes: Number(form.mes),
-        valorFieam: parseFloat(form.valorFieam) || 0,
-        valorSesi: parseFloat(form.valorSesi) || 0,
-        valorSenai: parseFloat(form.valorSenai) || 0,
-        valorIel: parseFloat(form.valorIel) || 0,
+        valorFieam: parseRaw(form.valorFieam),
+        valorSesi: parseRaw(form.valorSesi),
+        valorSenai: parseRaw(form.valorSenai),
+        valorIel: parseRaw(form.valorIel),
         totalGeral: form.totalGeral,
         estrategia: form.estrategia
       };
-      await api.put(`/atualizar-item/${payload.itemId}`, payload, {
+      await api.put(`itens/atualizar-valor/${payload.itemId}`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -162,7 +214,6 @@ const AtualizacaoItem = () => {
       <Paper sx={{ p: 4 }}>
         <Typography variant="h5" mb={2}>Atualização de Item</Typography>
         <Grid container spacing={2}>
-          {/* Select de Setor */}
           <Grid item xs={12} sm={6}>
             <TextField
               select
@@ -181,7 +232,6 @@ const AtualizacaoItem = () => {
             </TextField>
           </Grid>
 
-          {/* Select de Item, filtrado pelo setor selecionado */}
           <Grid item xs={12} sm={6}>
             <TextField
               select
@@ -201,7 +251,6 @@ const AtualizacaoItem = () => {
             </TextField>
           </Grid>
 
-          {/* Select de Ano */}
           <Grid item xs={6} sm={3}>
             <TextField
               select
@@ -220,7 +269,6 @@ const AtualizacaoItem = () => {
             </TextField>
           </Grid>
 
-          {/* Select de Mês */}
           <Grid item xs={6} sm={3}>
             <TextField
               select
@@ -239,61 +287,68 @@ const AtualizacaoItem = () => {
             </TextField>
           </Grid>
 
-          {/* Campos de valor numérico */}
           <Grid item xs={12} sm={3}>
             <TextField
               label="Valor FIEAM"
               name="valorFieam"
-              type="number"
               fullWidth
               value={form.valorFieam}
-              onChange={handleChange}
+              onChange={isMoeda ? handleValorRawChange : handleChange}
+              onBlur={isMoeda ? () => formatCurrencyOnBlur('valorFieam') : undefined}
+              onFocus={isMoeda ? () => handleFocusValue('valorFieam') : undefined}
+              InputProps={isMoeda ? { startAdornment: <InputAdornment position="start">R$</InputAdornment> } : {}}
             />
           </Grid>
+
           <Grid item xs={12} sm={3}>
             <TextField
               label="Valor SESI"
               name="valorSesi"
-              type="number"
               fullWidth
               value={form.valorSesi}
-              onChange={handleChange}
+              onChange={isMoeda ? handleValorRawChange : handleChange}
+              onBlur={isMoeda ? () => formatCurrencyOnBlur('valorSesi') : undefined}
+              onFocus={isMoeda ? () => handleFocusValue('valorSesi') : undefined}
+              InputProps={isMoeda ? { startAdornment: <InputAdornment position="start">R$</InputAdornment> } : {}}
             />
           </Grid>
+
           <Grid item xs={12} sm={3}>
             <TextField
               label="Valor SENAI"
               name="valorSenai"
-              type="number"
               fullWidth
               value={form.valorSenai}
-              onChange={handleChange}
+              onChange={isMoeda ? handleValorRawChange : handleChange}
+              onBlur={isMoeda ? () => formatCurrencyOnBlur('valorSenai') : undefined}
+              onFocus={isMoeda ? () => handleFocusValue('valorSenai') : undefined}
+              InputProps={isMoeda ? { startAdornment: <InputAdornment position="start">R$</InputAdornment> } : {}}
             />
           </Grid>
+
           <Grid item xs={12} sm={3}>
             <TextField
               label="Valor IEL"
               name="valorIel"
-              type="number"
               fullWidth
               value={form.valorIel}
-              onChange={handleChange}
+              onChange={isMoeda ? handleValorRawChange : handleChange}
+              onBlur={isMoeda ? () => formatCurrencyOnBlur('valorIel') : undefined}
+              onFocus={isMoeda ? () => handleFocusValue('valorIel') : undefined}
+              InputProps={isMoeda ? { startAdornment: <InputAdornment position="start">R$</InputAdornment> } : {}}
             />
           </Grid>
 
-          {/* Campo de Total (somente leitura) */}
           <Grid item xs={12} sm={3}>
             <TextField
               label="Total Geral"
               name="totalGeral"
-              type="number"
               fullWidth
-              value={form.totalGeral}
+              value={isMoeda ? totalGeralFormatted(form.totalGeral) : form.totalGeral}
               disabled
             />
           </Grid>
 
-          {/* Rádio de estratégia */}
           <Grid item xs={12}>
             <Typography variant="subtitle1" gutterBottom>
               Estratégia de Atualização
@@ -385,11 +440,16 @@ const AtualizacaoItem = () => {
           </TableContainer>
         </Paper>
       </Box>
-
     </Box>
-
-
   );
+};
+
+// Função auxiliar para formatar totalGeral uma única vez
+const totalGeralFormatted = (num) => {
+  return num.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  });
 };
 
 export default AtualizacaoItem;
