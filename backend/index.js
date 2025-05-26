@@ -8,17 +8,15 @@ const authRoutes = require('./routes/authRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');
 const setorRoutes = require('./routes/setorRoutes');
 const perfilRoutes = require('./routes/perfilRoutes');
-const itensRouter = require('./routes/itens');
+const itensRouter = require('./routes/itensRoutes');
 const historicoRoutes = require('./routes/historicoRoutes')
-const atualizarItemRoutes = require('./routes/atualizarItem');
-const jornadaRoutes = require('./routes/jornada');
+const jornadaRoutes = require('./routes/jornadaRoutes');
 const propostasRoute = require('./routes/propostas');
 
 app.use(cors({ origin: '*', credentials: true }));
 app.use(express.json());
 
 app.use('/api/propostas', propostasRoute);
-
 app.use('/api/jornadas', jornadaRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/usuarios', usuarioRoutes);
@@ -26,7 +24,6 @@ app.use('/api/setores', setorRoutes);
 app.use('/api/perfis', perfilRoutes);
 app.use('/api/itens', itensRouter);
 app.use('/api/historico', historicoRoutes);
-app.use('/api', atualizarItemRoutes);
 
 app.get('/', (req, res) => res.send('API Online'));
 
