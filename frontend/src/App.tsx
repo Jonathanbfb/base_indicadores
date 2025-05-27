@@ -10,6 +10,7 @@ import Comercial from './pages/setores/Comercial';
 import Geral from './pages/setores/Geral';
 import JornadaColaboradores from './pages/JornadaColaboradores';
 import SetorPage from './pages/setores/SetorPage';
+import AuthMiddleware from './middlewares/authMiddleware';
 
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem('token');
@@ -35,12 +36,13 @@ function App() {
         {/* Login fora do layout */}
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
+        <Route element={<AuthMiddleware />}>
         <Route path="/setor/Comercial" element={<Comercial />} />
         <Route path="/setor/Geral" element={<Geral />} />
         <Route path="/setor/:slug" element={<SetorPage />} />
 
         {/* Rotas protegidas dentro do layout com a AppBar */}
-        <Route element={<LayoutComBarra />}>
+        <Route element={ <LayoutComBarra />}>
           <Route path="/menu" element={<PrivateRoute><Menu /></PrivateRoute>} />
 
           <Route path="/usuarios" element={
@@ -72,12 +74,11 @@ function App() {
               <JornadaColaboradores></JornadaColaboradores>
             </ProtectedRoute>
           } />
+          </Route>
         </Route>
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/menu" />} />
-
       </Routes>
+      
     </Router>
   );
 }

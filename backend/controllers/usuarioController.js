@@ -1,6 +1,4 @@
 const prisma = require('../prisma/client');
-const axios = require('axios');
-const { startOfMonth, endOfMonth, eachDayOfInterval, getDay, getDate, getMonth, getYear, isWeekend } = require('date-fns');
 
 // Listar usuários com perfil e setores
 const listar = async (req, res) => {
@@ -29,18 +27,6 @@ const listar = async (req, res) => {
     res.status(500).json({ erro: 'Erro ao listar usuários' });
   }
 };
-
-// função para obter feriados com BrasilApi
-async function obterFeriadosNacionais(ano) {
-  try {
-    const response = await axios.get(`https://brasilapi.com.br/api/feriados/v1/${ano}`);
-    return response.data.map((feriado) => feriado.date);
-  } catch (error) {
-    console.error('Erro ao obter feriados:', error);
-    return [];
-  }
-}
-
 
 // função para criar os usuarios e mapear suas jornadas!
 const criar = async (req, res) => {

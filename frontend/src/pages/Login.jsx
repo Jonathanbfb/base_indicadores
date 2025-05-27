@@ -23,10 +23,6 @@ const Login = () => {
   const [erro, setErro] = useState('');
   const [imagemAtual, setImagemAtual] = useState(neutro);
 
-  //const secret = '10203040'; // igual ao JWT_SECRET no backend
-//const payload = { id: 999, nome: 'Paulo Pereira', perfil: 'Administrador' };
-//const token = jwt.encode(payload, secret)
-
   const emailRef = useRef(null);
   const senhaRef = useRef(null);
 
@@ -63,31 +59,20 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErro('');
-  
-    // Login local hardcoded
 
-    if (email === 'paulo.pereira@fieam.org.br' && senha === '10203040') {
-      localStorage.setItem('token', 'token_fake_dev');
-      localStorage.setItem('usuario', JSON.stringify({ nome: 'Paulo Pereira', perfil: 'Administrador' }));
-      localStorage.setItem('email', email);
-      alert('Login local realizado com sucesso!');
-      navigate('/menu');
-      return;
-    }
-  
     // Login com backend
     try {
       const response = await api.post('/auth/login', {
         username: email,
         password: senha
       });
-  
+
       const { token, usuario } = response.data;
-  
+
       localStorage.setItem('token', token);
       localStorage.setItem('usuario', JSON.stringify(usuario));
       localStorage.setItem('email', email);
-  
+
       alert('Login realizado com sucesso!');
       navigate('/menu');
     } catch (error) {
@@ -125,15 +110,15 @@ const Login = () => {
         </Typography>
 
         <Box textAlign="center" mb={2}>
-          <img 
-            src={imagemAtual} 
-            alt="Animação do personagem" 
+          <img
+            src={imagemAtual}
+            alt="Animação do personagem"
             style={{
               width: 120,
               height: 120,
               borderRadius: '50%',
               transition: 'all 0.5s ease-in-out'
-            }} 
+            }}
           />
         </Box>
 
