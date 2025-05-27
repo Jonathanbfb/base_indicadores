@@ -25,6 +25,7 @@ const AtualizacaoItem = () => {
   const [allItens, setAllItens] = useState([]);
   const [historico, setHistorico] = useState([]);
   const [itensFiltrados, setItensFiltrados] = useState([]);
+  const [erro, setErro] = useState("");
 
   const [form, setForm] = useState({
     setorId: '',
@@ -181,8 +182,21 @@ const AtualizacaoItem = () => {
     setForm(prev => ({ ...prev, [name]: semPontos }));
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
     try {
+
+      if (!form.mes) {
+        setErro("Você deve selecionar um mês antes de enviar.");
+        return;
+      }
+
+      if (!form.valorFieam || !form.valorSesi || !form.valorSenai || !form.valorIel) {
+        setErro("Valores não podem estar em branco")
+        return
+      }
+
+      e.preventDefault();
+
       // converte string "2.000,00" → number 2000.00
       const parseRaw = raw => parseFloat(raw.replace(/\./g, '').replace(',', '.')) || 0;
       const payload = {
@@ -197,11 +211,13 @@ const AtualizacaoItem = () => {
         totalGeral: form.totalGeral,
         estrategia: form.estrategia
       };
+
       await api.put(`itens/atualizar-valor/${payload.itemId}`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       alert('Item atualizado com sucesso');
+      setErro(false)
       limparFormulario();
       fetchHistorico();
     } catch (error) {
@@ -277,6 +293,8 @@ const AtualizacaoItem = () => {
               fullWidth
               value={form.mes}
               onChange={handleChange}
+              error={Boolean(erro)}
+              helperText={erro || ""}
             >
               <MenuItem value="">Selecione o mês</MenuItem>
               {Object.entries(meses).map(([nomeMes, numeroMes]) => (
@@ -289,7 +307,7 @@ const AtualizacaoItem = () => {
 
           <Grid item xs={12} sm={3}>
             <TextField
-              label="Valor FIEAM"
+              label="Valor FIEAM (0 se não houver valor!)"
               name="valorFieam"
               fullWidth
               value={form.valorFieam}
@@ -302,7 +320,7 @@ const AtualizacaoItem = () => {
 
           <Grid item xs={12} sm={3}>
             <TextField
-              label="Valor SESI"
+              label="Valor SESI (0 se não houver valor!)"
               name="valorSesi"
               fullWidth
               value={form.valorSesi}
@@ -315,7 +333,7 @@ const AtualizacaoItem = () => {
 
           <Grid item xs={12} sm={3}>
             <TextField
-              label="Valor SENAI"
+              label="Valor SENAI (0 se não houver valor!)"
               name="valorSenai"
               fullWidth
               value={form.valorSenai}
@@ -328,7 +346,7 @@ const AtualizacaoItem = () => {
 
           <Grid item xs={12} sm={3}>
             <TextField
-              label="Valor IEL"
+              label="Valor IEL (0 se não houver valor!)"
               name="valorIel"
               fullWidth
               value={form.valorIel}
@@ -382,7 +400,7 @@ const AtualizacaoItem = () => {
           <Button
             variant="contained"
             onClick={handleSubmit}
-            disabled={!form.setorId || !form.itemId}
+            disabled={!form.setorId || !form.itemId || !form.valorFieam || !form.valorSenai || !form.valorSesi || !form.valorIel}
           >
             Atualizar Indicador
           </Button>

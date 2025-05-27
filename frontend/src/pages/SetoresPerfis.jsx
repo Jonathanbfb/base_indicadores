@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   Box, Typography, Button, Table, TableHead, TableRow, TableCell, TableBody,
-  Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton
+  Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton, Snackbar, Alert
 } from '@mui/material';
 import { Edit, Delete } from '@mui/icons-material';
 import api from '../services/api';
@@ -10,12 +10,15 @@ const SetoresPerfis = () => {
   const [setores, setSetores] = useState([]);
   const [perfis, setPerfis] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
+  const [notificacao, setNotificacao] = useState({ open: false, tipo: 'success', mensagem: '' });
   const [tipo, setTipo] = useState('setor');
   const [form, setForm] = useState({ nome: '', descricao: '', tipo: '' });
   const [editingId, setEditingId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ open: false, tipo: '', id: null });
 
   const token = localStorage.getItem('token');
+
+  const regex = /[^a-zA-Z0-9\s]/g;
 
   function criarSlug(text) {
     return text
@@ -58,6 +61,18 @@ const SetoresPerfis = () => {
           headers: { Authorization: `Bearer ${token}` }
         });
       } else {
+
+        const verificarEspeciais = regex.test(payload.nome)
+
+        if (verificarEspeciais) {
+          setNotificacao({
+            open: true,
+            tipo: 'error',
+            mensagem: 'Caracteres inválidos, tente novamente!'
+          });
+          return
+        }
+
         payload.slug = criarSlug(payload.nome)
         await api.post(endpoint, payload, {
           headers: { Authorization: `Bearer ${token}` }
@@ -65,10 +80,23 @@ const SetoresPerfis = () => {
       }
 
       setOpenDialog(false);
-      window.location.reload();
+      setNotificacao({
+        open: true,
+        tipo: 'success',
+        mensagem: 'Setor cadastrado com sucesso!'
+      });
+
+      setTimeout(function () {
+        window.location.reload()
+      }, 2000)
+
     } catch (err) {
       console.error('Erro ao salvar:', err);
-      alert('Erro ao salvar. Verifique se está autenticado.');
+      setNotificacao({
+        open: true,
+        tipo: 'error',
+        mensagem: 'Erro ao salvar. Verifique se está autenticado.'
+      });
     }
   };
 
@@ -176,7 +204,26 @@ const SetoresPerfis = () => {
           <Button onClick={handleDelete} variant="contained" color="error">Excluir</Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={notificacao.open}
+        autoHideDuration={5000}
+        onClose={() => setNotificacao({ ...notificacao, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setNotificacao({ ...notificacao, open: false })}
+          severity={notificacao.tipo}
+          variant="filled"
+        >
+          {notificacao.mensagem}
+        </Alert>
+      </Snackbar>
+
     </Box>
+
+
+
   );
 };
 

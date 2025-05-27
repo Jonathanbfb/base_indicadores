@@ -13,7 +13,6 @@ const AuthMiddleware = () => {
             const token = localStorage.getItem('token');
 
             if (!token) {
-                // Não há token: limpa storage e redireciona para /login
                 localStorage.removeItem('token');
                 localStorage.removeItem('usuario');
                 localStorage.removeItem('email');
@@ -22,18 +21,16 @@ const AuthMiddleware = () => {
             }
 
             try {
-                // Faz GET /auth/validar (axios já injeta o Authorization via interceptor)
                 const response = await api.get('/auth/validar', {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
                 });
-                // Token válido → libera acesso às rotas-filhas
                 localStorage.setItem('usuario', JSON.stringify(response.data.usuario));
                 localStorage.setItem('email', response.data.usuario.email);
                 setChecking(false);
             } catch (err) {
-                // Se der 401 ou outro erro, limpa storage e manda pra /login
+
                 if (err.response && err.response.status === 401) {
                     localStorage.removeItem('token');
                     localStorage.removeItem('usuario');
