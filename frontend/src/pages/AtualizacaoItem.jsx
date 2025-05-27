@@ -16,7 +16,9 @@ import {
   TableRow,
   TableCell,
   TableBody,
-  InputAdornment
+  InputAdornment,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import api from '../services/api';
 
@@ -24,6 +26,7 @@ const AtualizacaoItem = () => {
   const [setores, setSetores] = useState([]);
   const [allItens, setAllItens] = useState([]);
   const [historico, setHistorico] = useState([]);
+  const [notificacao, setNotificacao] = useState({ open: false, tipo: 'success', mensagem: '' });
   const [itensFiltrados, setItensFiltrados] = useState([]);
   const [erro, setErro] = useState("");
 
@@ -190,11 +193,6 @@ const AtualizacaoItem = () => {
         return;
       }
 
-      if (!form.valorFieam || !form.valorSesi || !form.valorSenai || !form.valorIel) {
-        setErro("Valores não podem estar em branco")
-        return
-      }
-
       e.preventDefault();
 
       // converte string "2.000,00" → number 2000.00
@@ -222,6 +220,11 @@ const AtualizacaoItem = () => {
       fetchHistorico();
     } catch (error) {
       console.error('Erro ao atualizar item:', error);
+      setNotificacao({
+        open: true,
+        tipo: 'error',
+        mensagem: `Erro: ${error.response.data.message}`
+      });
     }
   };
 
@@ -400,7 +403,7 @@ const AtualizacaoItem = () => {
           <Button
             variant="contained"
             onClick={handleSubmit}
-            disabled={!form.setorId || !form.itemId || !form.valorFieam || !form.valorSenai || !form.valorSesi || !form.valorIel}
+            disabled={!form.setorId || !form.itemId}
           >
             Atualizar Indicador
           </Button>
@@ -458,6 +461,20 @@ const AtualizacaoItem = () => {
           </TableContainer>
         </Paper>
       </Box>
+      <Snackbar
+        open={notificacao.open}
+        autoHideDuration={5000}
+        onClose={() => setNotificacao({ ...notificacao, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setNotificacao({ ...notificacao, open: false })}
+          severity={notificacao.tipo}
+          variant="filled"
+        >
+          {notificacao.mensagem}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

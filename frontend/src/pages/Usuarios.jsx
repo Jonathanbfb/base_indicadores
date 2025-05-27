@@ -53,9 +53,21 @@ const Usuarios = () => {
   const handleSubmit = async () => {
     try {
       if (editingId) {
+
+        if (form.perfilId === "" || form.setorIds.length === 0 || form.jornadaTrabalho === '') {
+          setNotificacao({ open: true, tipo: 'error', mensagem: 'Há informações faltando, Tente novamente!' });
+          return
+        }
+
         await api.put(`/usuarios/${editingId}`, form, { headers: { Authorization: `Bearer ${token}` } });
         setNotificacao({ open: true, tipo: 'success', mensagem: 'Usuário atualizado com sucesso!' });
       } else {
+
+        if (form.perfilId === "" || form.setorIds.length === 0 || form.jornadaTrabalho === '') {
+          setNotificacao({ open: true, tipo: 'error', mensagem: 'Há informações faltando, Tente novamente!' });
+          return
+        }
+
         await api.post('/usuarios', form, { headers: { Authorization: `Bearer ${token}` } });
         setNotificacao({ open: true, tipo: 'success', mensagem: 'Usuário cadastrado com sucesso!' });
       }
@@ -66,7 +78,7 @@ const Usuarios = () => {
       setEditingId(null);
       fetchUsuarios();
     } catch (error) {
-      const msg = error.response?.data?.erro || 'Erro ao salvar usuário';
+      const msg = error.response?.data?.message || 'Erro ao salvar usuário';
       console.error(msg);
       setNotificacao({ open: true, tipo: 'error', mensagem: msg });
     }
