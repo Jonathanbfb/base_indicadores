@@ -29,14 +29,14 @@ const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const JornadaColaboradores = () => {
   const [ano, setAno] = useState(dayjs().year());
   const [mes, setMes] = useState(dayjs().month() + 1);
-  const [dados, setDados] = useState([]); 
+  const [dados, setDados] = useState([]);
   const [feriados, setFeriados] = useState([]);
   const [notificacao, setNotificacao] = useState({ open: false, tipo: 'success', mensagem: '' });
   const [setores, setSetores] = useState([]);
   const [setoresCarregados, setSetoresCarregados] = useState(false);
   const [setorSelecionado, setSetorSelecionado] = useState('');
   const [modalAberto, setModalAberto] = useState(false);
-  const [diaSelecionado, setDiaSelecionado] = useState(null); 
+  const [diaSelecionado, setDiaSelecionado] = useState(null);
   const [novoValor, setNovoValor] = useState('');
   const [motivo, setMotivo] = useState('');
   const token = localStorage.getItem('token');
@@ -70,7 +70,7 @@ const JornadaColaboradores = () => {
       const uRes = await api.get('/usuarios', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const usuarios = uRes.data; 
+      const usuarios = uRes.data;
 
       // 2.2) Buscar feriados do ano
       const fRes = await fetch(`https://brasilapi.com.br/api/feriados/v1/${ano}`).then(r => r.json());
@@ -82,7 +82,7 @@ const JornadaColaboradores = () => {
         headers: { Authorization: `Bearer ${token}` },
         params: { mes, ano }
       });
-      const jornadasBackend = jRes.data.jornada || []; 
+      const jornadasBackend = jRes.data.jornada || [];
       // cada item tem { id, dia, mes, ano, motivo, valor, colaborador:{ id, nome } }
 
       // 2.4) Para cada usuário, criar array de dias preenchido com valores padrão, depois sobrescrever com backend
@@ -107,7 +107,7 @@ const JornadaColaboradores = () => {
             dia: idx + 1,
             valor: valorPadrao,
             motivo: '',
-            id: null 
+            id: null
           };
         });
 
@@ -124,7 +124,7 @@ const JornadaColaboradores = () => {
       jornadasBackend.forEach(entry => {
         if (entry.ano === ano && entry.mes === mes) {
           const colaboradorId = entry.colaborador.id;
-          const diaIndex = entry.dia - 1; 
+          const diaIndex = entry.dia - 1;
           const usuarioObj = usuariosComDias.find(u => u.id === colaboradorId);
           if (usuarioObj && usuarioObj.dias[diaIndex]) {
             usuarioObj.dias[diaIndex] = {
@@ -160,7 +160,7 @@ const JornadaColaboradores = () => {
         }
         dadosPorSetor[nomeSetor].push({
           ...userObj,
-          setorId: setorPrincipalId || 0 
+          setorId: setorPrincipalId || 0
         });
       });
 
@@ -373,18 +373,20 @@ const JornadaColaboradores = () => {
             onChange={e => setSetorSelecionado(e.target.value)}
             label="Setor"
           >
-            {setores.map(setor => (
-              <MenuItem key={setor.id} value={setor.nome}>
-                {setor.nome}
-              </MenuItem>
-            ))}
+            {setores
+              .filter(setor => setor.nome != "Setor Padrão")
+              .map(setor => (
+                <MenuItem key={setor.id} value={setor.nome}>
+                  {setor.nome}
+                </MenuItem>
+              ))}
           </Select>
         </FormControl>
       </Box>
 
       {/* Tabela de Jornadas por Colaborador */}
       {dados
-        .filter(d => d.setor === setorSelecionado)
+        .filter(d => d.setor === setorSelecionado && d.setor != "Setor Padrão")
         .map(({ setor, colaboradores }) => (
           <Box key={setor} mb={4}>
             <Typography variant="h6">Setor: {setor}</Typography>

@@ -148,42 +148,44 @@ const LayoutBase = () => {
                 </Typography>
 
                 <Grid container spacing={3} justifyContent="center">
-                  {setores.map(({ nome, id, slug }) => (
-                    <Grid item xs={12} sm={6} md={3} key={id}>
-                      <motion.div whileHover={{ scale: 1.05, y: -5 }} transition={{ duration: 0.3 }} style={{ height: '100%' }}>
-                        <Paper
-                          component={RouterLink}
-                          to={`/setor/${slug}`}
-                          state={{ setorId: id }}
-                          elevation={4}
-                          sx={{
-                            height: '100%',
-                            p: 3,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            borderRadius: 3,
-                            textDecoration: 'none',
-                            background: 'linear-gradient(to bottom, #e3f2fd, #ffffff)',
-                            color: '#0d47a1',
-                            transition: 'all 0.3s ease-in-out',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                            '&:hover': {
-                              background: '#bbdefb',
-                              boxShadow: '0 8px 20px rgba(0,0,0,0.2)',
-                              color: '#002171',
-                            }
-                          }}
-                        >
-                          <Typography variant="h6" fontWeight="bold" align="center">{nome}</Typography>
-                          <Typography variant="body2" color="text.secondary" align="center" mt={1}>
-                            Ver Indicadores
-                          </Typography>
-                        </Paper>
-                      </motion.div>
-                    </Grid>
-                  ))}
+                  {setores
+                    .filter(setor => setor.nome != "Setor Padrão")
+                    .map(({ nome, id, slug }) => (
+                      <Grid item xs={12} sm={6} md={3} key={id}>
+                        <motion.div whileHover={{ scale: 1.05, y: -5 }} transition={{ duration: 0.3 }} style={{ height: '100%' }}>
+                          <Paper
+                            component={RouterLink}
+                            to={`/setor/${slug}`}
+                            state={{ setorId: id }}
+                            elevation={4}
+                            sx={{
+                              height: '100%',
+                              p: 3,
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              borderRadius: 3,
+                              textDecoration: 'none',
+                              background: 'linear-gradient(to bottom, #e3f2fd, #ffffff)',
+                              color: '#0d47a1',
+                              transition: 'all 0.3s ease-in-out',
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                              '&:hover': {
+                                background: '#bbdefb',
+                                boxShadow: '0 8px 20px rgba(0,0,0,0.2)',
+                                color: '#002171',
+                              }
+                            }}
+                          >
+                            <Typography variant="h6" fontWeight="bold" align="center">{nome}</Typography>
+                            <Typography variant="body2" color="text.secondary" align="center" mt={1}>
+                              Ver Indicadores
+                            </Typography>
+                          </Paper>
+                        </motion.div>
+                      </Grid>
+                    ))}
                 </Grid>
               </Box>
 

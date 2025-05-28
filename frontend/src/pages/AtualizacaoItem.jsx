@@ -188,11 +188,6 @@ const AtualizacaoItem = () => {
   const handleSubmit = async (e) => {
     try {
 
-      if (!form.mes) {
-        setErro("Você deve selecionar um mês antes de enviar.");
-        return;
-      }
-
       e.preventDefault();
 
       // converte string "2.000,00" → number 2000.00
@@ -214,8 +209,12 @@ const AtualizacaoItem = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      alert('Item atualizado com sucesso');
-      setErro(false)
+      setNotificacao({
+        open: true,
+        tipo: 'success',
+        mensagem: "Valores atualizados com sucesso!"
+      });
+      setErro(false);
       limparFormulario();
       fetchHistorico();
     } catch (error) {
@@ -403,7 +402,7 @@ const AtualizacaoItem = () => {
           <Button
             variant="contained"
             onClick={handleSubmit}
-            disabled={!form.setorId || !form.itemId}
+            disabled={!form.setorId || !form.itemId || !form.mes}
           >
             Atualizar Indicador
           </Button>
